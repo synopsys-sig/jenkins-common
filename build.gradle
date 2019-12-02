@@ -19,6 +19,9 @@ targetCompatibility = JavaVersion.VERSION_11
 
 apply plugin: 'com.blackducksoftware.integration.library'
 
-nexusStaging { packageGroup = 'com.synopsys' }
+nexusStaging {
+    packageGroup = 'com.synopsys'
+    stagingProfileId = '4af8bea8300633'
+}
 
 dependencies {}
