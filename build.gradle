@@ -24,4 +24,16 @@ nexusStaging {
     stagingProfileId = '4af8bea8300633'
 }
 
-dependencies {}
+repositories {
+    maven { url 'https://repo.jenkins-ci.org/releases/' }
+}
+
+dependencies {
+    compileOnly 'org.jenkins-ci.main:jenkins-core:2.60.1'
+    
+    // We assume that downstream Jenkins plugins will explicitly declare a dependency on the credentials plugin
+    compileOnly 'org.jenkins-ci.plugins:credentials:2.1.10@jar'
+    compileOnly 'org.jenkins-ci.plugins:plain-credentials:1.0@jar'
+
+    api 'com.blackducksoftware.integration:integration-rest:0.13.3'
+}
