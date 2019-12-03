@@ -20,7 +20,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins.stepworkflow;
+package com.synopsys.integration.stepworkflow;
 
 public abstract class AbstractExecutingSubStep implements SubStep<Object, Object> {
     public abstract SubStepResponse<Object>

@@ -20,15 +20,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins.stepworkflow;
+package com.synopsys.integration.stepworkflow;
 
-public abstract class AbstractSupplyingSubStep<R> implements SubStep<Object, R> {
-    public abstract SubStepResponse<R> run();
+public abstract class AbstractConsumingSubStep<T> implements SubStep<T, Object> {
+    public abstract SubStepResponse<Object> run(T data);
 
     @Override
-    public SubStepResponse<R> run(final SubStepResponse previousResponse) {
-        if (previousResponse.isSuccess()) {
-            return run();
+    public SubStepResponse<Object> run(final SubStepResponse<? extends T> previousResponse) {
+        if (previousResponse.isSuccess() && previousResponse.hasData()) {
+            return run(previousResponse.getData());
         } else {
             return SubStepResponse.FAILURE(previousResponse);
         }
