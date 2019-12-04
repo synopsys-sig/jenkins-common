@@ -27,7 +27,7 @@ import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
-public class PluginHelper {
+public class JenkinsVersionHelper {
     public static final String UNKNOWN_VERSION = "UNKNOWN_VERSION";
 
     public static String getPluginVersion(final String pluginName) {

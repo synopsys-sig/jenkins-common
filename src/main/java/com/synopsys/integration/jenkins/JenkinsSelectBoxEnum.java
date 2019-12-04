@@ -22,7 +22,16 @@
  */
 package com.synopsys.integration.jenkins;
 
+import java.util.stream.Stream;
+
+import hudson.util.ListBoxModel;
+
 public interface JenkinsSelectBoxEnum {
+    static ListBoxModel toListBoxModel(final JenkinsSelectBoxEnum[] selectBoxEnumValues) {
+        return Stream.of(selectBoxEnumValues)
+                   .collect(ListBoxModel::new, (model, value) -> model.add(value.getDisplayName(), value.name()), ListBoxModel::addAll);
+    }
+
     String getDisplayName();
 
     String name();
