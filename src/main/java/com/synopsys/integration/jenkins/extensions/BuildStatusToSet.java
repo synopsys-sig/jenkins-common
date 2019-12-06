@@ -20,20 +20,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.extensions;
 
-import java.util.stream.Stream;
+import hudson.model.Result;
 
-import hudson.util.ListBoxModel;
+public enum BuildStatusToSet implements JenkinsSelectBoxEnum {
+    SUCCESS("Success (log problems only)", Result.SUCCESS),
+    FAILURE("Failure", Result.FAILURE),
+    UNSTABLE("Unstable", Result.UNSTABLE);
 
-public interface JenkinsSelectBoxEnum {
-    static ListBoxModel toListBoxModel(final JenkinsSelectBoxEnum[] selectBoxEnumValues) {
-        return Stream.of(selectBoxEnumValues)
-                   .collect(ListBoxModel::new, (model, value) -> model.add(value.getDisplayName(), value.name()), ListBoxModel::addAll);
+    private final String displayName;
+    private final Result result;
+
+    BuildStatusToSet(final String displayName, final Result result) {
+        this.displayName = displayName;
+        this.result = result;
     }
 
-    String getDisplayName();
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
 
-    String name();
+    public Result getResult() {
+        return result;
+    }
 
 }

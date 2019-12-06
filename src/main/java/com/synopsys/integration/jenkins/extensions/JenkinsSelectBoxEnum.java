@@ -20,13 +20,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.extensions;
 
-import static hudson.model.Items.XSTREAM;
+import java.util.stream.Stream;
 
-public class SerializationHelper {
-    public static void migrateFieldFrom(final String oldName, final Class clazz, final String newName) {
-        XSTREAM.aliasField(oldName, clazz, newName);
-        XSTREAM.aliasField(newName, clazz, newName);
+import hudson.util.ListBoxModel;
+
+public interface JenkinsSelectBoxEnum {
+    static ListBoxModel toListBoxModel(final JenkinsSelectBoxEnum[] selectBoxEnumValues) {
+        return Stream.of(selectBoxEnumValues)
+                   .collect(ListBoxModel::new, (model, value) -> model.add(value.getDisplayName(), value.name()), ListBoxModel::addAll);
     }
+
+    String getDisplayName();
+
+    String name();
+
 }
