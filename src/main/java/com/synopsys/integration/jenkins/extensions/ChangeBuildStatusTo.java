@@ -24,15 +24,15 @@ package com.synopsys.integration.jenkins.extensions;
 
 import hudson.model.Result;
 
-public enum BuildStatusToSet implements JenkinsSelectBoxEnum {
-    SUCCESS("Success (log problems only)", Result.SUCCESS),
-    FAILURE("Failure", Result.FAILURE),
-    UNSTABLE("Unstable", Result.UNSTABLE);
+public enum ChangeBuildStatusTo implements JenkinsSelectBoxEnum {
+    SUCCESS("Do not change build status (only log)", Result.SUCCESS),
+    FAILURE("Fail the build", Result.FAILURE),
+    UNSTABLE("Mark build as Unstable", Result.UNSTABLE);
 
     private final String displayName;
     private final Result result;
 
-    BuildStatusToSet(final String displayName, final Result result) {
+    ChangeBuildStatusTo(final String displayName, final Result result) {
         this.displayName = displayName;
         this.result = result;
     }
