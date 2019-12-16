@@ -46,30 +46,36 @@ public class SynopsysCredentialsHelper {
     public static final CredentialsMatcher API_TOKEN_OR_USERNAME_PASSWORD_CREDENTIALS = CredentialsMatchers
                                                                                             .either(CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS), CredentialsMatchers.instanceOf(USERNAME_PASSWORD_CREDENTIALS_CLASS));
 
-    public static Optional<String> getUsernameFromCredentials(final String credentialsId) {
-        return getCredentials(credentialsId)
-                   .filter(USERNAME_PASSWORD_CREDENTIALS_CLASS::isInstance)
-                   .map(USERNAME_PASSWORD_CREDENTIALS_CLASS::cast)
+    public static Optional<String> getUsernameCredentialsId(final String credentialsId) {
+        return getUsernamePasswordCredentialsById(credentialsId)
                    .map(UsernamePasswordCredentialsImpl::getUsername);
     }
 
-    public static Optional<String> getPasswordFromCredentials(final String credentialsId) {
-        return getCredentials(credentialsId)
-                   .filter(USERNAME_PASSWORD_CREDENTIALS_CLASS::isInstance)
-                   .map(USERNAME_PASSWORD_CREDENTIALS_CLASS::cast)
+    public static Optional<String> getPasswordCredentialsId(final String credentialsId) {
+        return getUsernamePasswordCredentialsById(credentialsId)
                    .map(UsernamePasswordCredentialsImpl::getPassword)
                    .map(Secret::getPlainText);
     }
 
-    public static Optional<String> getApiTokenFromCredentials(final String credentialsId) {
-        return getCredentials(credentialsId)
-                   .filter(API_TOKEN_CREDENTIALS_CLASS::isInstance)
-                   .map(API_TOKEN_CREDENTIALS_CLASS::cast)
+    public static Optional<String> getApiTokenByCredentialsId(final String credentialsId) {
+        return getApiTokenCredentialsById(credentialsId)
                    .map(StringCredentialsImpl::getSecret)
                    .map(Secret::getPlainText);
     }
 
-    private static Optional<BaseStandardCredentials> getCredentials(final String credentialsId) {
+    public static Optional<UsernamePasswordCredentialsImpl> getUsernamePasswordCredentialsById(final String credentialsId) {
+        return getCredentialsById(credentialsId)
+                   .filter(USERNAME_PASSWORD_CREDENTIALS_CLASS::isInstance)
+                   .map(USERNAME_PASSWORD_CREDENTIALS_CLASS::cast);
+    }
+
+    public static Optional<StringCredentialsImpl> getApiTokenCredentialsById(final String credentialsId) {
+        return getCredentialsById(credentialsId)
+                   .filter(API_TOKEN_CREDENTIALS_CLASS::isInstance)
+                   .map(API_TOKEN_CREDENTIALS_CLASS::cast);
+    }
+
+    public static Optional<BaseStandardCredentials> getCredentialsById(final String credentialsId) {
         if (StringUtils.isBlank(credentialsId)) {
             return Optional.empty();
         }
