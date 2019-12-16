@@ -33,23 +33,20 @@ import hudson.remoting.VirtualChannel;
 
 public class RemoteSubStep<R extends Serializable> implements SubStep<Object, R> {
     private final VirtualChannel virtualChannel;
-    private final Callable<RemoteSubStepResponse<R>, IntegrationException> callable;
+    private final Callable<R, IntegrationException> callable;
 
-    private RemoteSubStep(final VirtualChannel virtualChannel, final Callable<RemoteSubStepResponse<R>, IntegrationException> callable) {
+    private RemoteSubStep(final VirtualChannel virtualChannel, final Callable<R, IntegrationException> callable) {
         this.virtualChannel = virtualChannel;
         this.callable = callable;
     }
 
-    public static <S extends Serializable> RemoteSubStep<S> of(final VirtualChannel virtualChannel, final Callable<RemoteSubStepResponse<S>, IntegrationException> callable) {
+    public static <S extends Serializable> RemoteSubStep<S> of(final VirtualChannel virtualChannel, final Callable<S, IntegrationException> callable) {
         return new RemoteSubStep<>(virtualChannel, callable);
     }
 
     @Override
     public SubStepResponse<R> run(final SubStepResponse<?> previousResponse) {
-        return SubStep.defaultExecution(previousResponse.isSuccess(), previousResponse, () -> {
-            final RemoteSubStepResponse<R> thisResponse = virtualChannel.call(callable);
-            return thisResponse.toSubStepResponse();
-        });
+        return SubStep.defaultExecution(previousResponse.isSuccess(), previousResponse, () -> SubStepResponse.SUCCESS(virtualChannel.call(callable)));
     }
 
 }
