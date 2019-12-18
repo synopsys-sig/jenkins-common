@@ -55,4 +55,12 @@ public class StepWorkflowResponse<T> {
     public <E extends Throwable> void consumeResponse(final ThrowingConsumer<StepWorkflowResponse<T>, E> responseHandler) throws E {
         responseHandler.apply(this);
     }
+
+    public T getDataOrThrowException() throws Exception {
+        if (workflowSucceeded) {
+            return data;
+        }
+
+        throw exception;
+    }
 }
