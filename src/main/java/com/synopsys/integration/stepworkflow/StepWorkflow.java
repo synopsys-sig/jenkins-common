@@ -33,12 +33,17 @@ public class StepWorkflow<T> {
         this.end = end;
     }
 
+    protected StepWorkflow(final FlowController<Object, T> startAndEnd) {
+        this.start = startAndEnd;
+        this.end = startAndEnd;
+    }
+
     public static <R> Builder<R> first(final SubStep<Object, R> firstStep) {
         return new Builder<>(firstStep);
     }
 
     public static <R> StepWorkflow<R> just(final SubStep<Object, R> onlyStep) {
-        return new StepWorkflow<>(new FlowController<>(onlyStep), new FlowController<>(onlyStep));
+        return new StepWorkflow<>(new FlowController<>(onlyStep));
     }
 
     public StepWorkflowResponse<T> run() {
