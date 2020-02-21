@@ -1,8 +1,8 @@
 /**
  * jenkins-common
- *
+ * <p>
  * Copyright (c) 2020 Synopsys, Inc.
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -10,9 +10,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -28,9 +28,19 @@ import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
 public class JenkinsVersionHelper {
+    private static final JenkinsVersionHelper SINGLE_INSTANCE = new JenkinsVersionHelper();
+
     public static final String UNKNOWN_VERSION = "UNKNOWN_VERSION";
 
     public static String getPluginVersion(final String pluginName) {
+        return SINGLE_INSTANCE.getPluginVersion(pluginName);
+    }
+
+    public static String getJenkinsVersion() {
+        return SINGLE_INSTANCE.getJenkinsVersionInstance();
+    }
+
+    public String getPluginVersionInstance(final String pluginName) {
         String pluginVersion = UNKNOWN_VERSION;
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
@@ -47,7 +57,7 @@ public class JenkinsVersionHelper {
         return pluginVersion;
     }
 
-    public static String getJenkinsVersion() {
+    public String getJenkinsVersionInstance() {
         final VersionNumber versionNumber = Jenkins.getVersion();
         if (versionNumber == null) {
             return UNKNOWN_VERSION;
