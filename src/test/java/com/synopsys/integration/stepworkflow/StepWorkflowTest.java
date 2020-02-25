@@ -10,8 +10,8 @@ public class StepWorkflowTest {
 
     @Test
     public void testSuccessfulSingleStepDataStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(SubStep.ofSupplier(this::successfulDataSupplier))
-                                                     .run();
+        final StepWorkflow<Integer> stepWorkflow = new StepWorkflow<>(new StepWorkflowController<Object, Integer>(SubStep.ofSupplier(this::successfulDataSupplier)));
+        final StepWorkflowResponse<Integer> response = stepWorkflow.run();
 
         Assert.assertTrue(response.wasSuccessful());
         Assert.assertEquals(DATA, response.getData());
@@ -20,8 +20,8 @@ public class StepWorkflowTest {
 
     @Test
     public void testSuccessfulSingleStepDatalessStepWorkflow() {
-        StepWorkflowResponse response = StepWorkflow.just(SubStep.ofExecutor(this::successfulExecutor))
-                                            .run();
+        final StepWorkflow<Object> stepWorkflow = new StepWorkflow<>(new StepWorkflowController<Object, Object>(SubStep.ofExecutor(this::successfulExecutor)));
+        final StepWorkflowResponse response = stepWorkflow.run();
 
         Assert.assertTrue(response.wasSuccessful());
         Assert.assertNull(response.getData());
@@ -30,8 +30,8 @@ public class StepWorkflowTest {
 
     @Test
     public void testUnsuccessfulSingleStepStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(SubStep.ofSupplier(this::unsuccessfulDataSupplier))
-                                                     .run();
+        final StepWorkflow<Integer> stepWorkflow = new StepWorkflow<>(new StepWorkflowController<Object, Integer>(SubStep.ofSupplier(this::unsuccessfulDataSupplier)));
+        final StepWorkflowResponse<Integer> response = stepWorkflow.run();
 
         Assert.assertFalse(response.wasSuccessful());
         Assert.assertNull(response.getData());

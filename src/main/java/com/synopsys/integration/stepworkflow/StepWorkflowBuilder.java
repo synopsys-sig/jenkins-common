@@ -22,28 +22,34 @@
  */
 package com.synopsys.integration.stepworkflow;
 
-public class StepWorkflow<T> {
+public class StepWorkflowBuilder<T> {
     private final StepWorkflowController<Object, ?> start;
     private final StepWorkflowController<?, T> end;
 
-    public StepWorkflow(final StepWorkflowController<Object, ?> start, final StepWorkflowController<?, T> end) {
-        this.start = start;
-        this.end = end;
+    public StepWorkflowBuilder(final SubStep<Object, T> firstStep) {
+        final StepWorkflowController<Object, T> firstFlowController = new StepWorkflowController<>(firstStep);
+        this.start = firstFlowController;
+        this.end = firstFlowController;
     }
 
-    public StepWorkflow(final StepWorkflowController<Object, T> startAndEnd) {
-        this.start = startAndEnd;
-        this.end = startAndEnd;
+    public <S> StepWorkflowBuilder(final StepWorkflowBuilder<S> previousStepWorkflowBuilder, final SubStep<? super S, T> thisStep) {
+        this.start = previousStepWorkflowBuilder.start;
+        this.end = previousStepWorkflowBuilder.end.append(thisStep);
+    }
+
+    public <R> StepWorkflowBuilder<R> then(final SubStep<? super T, R> subStep) {
+        return new StepWorkflowBuilder<>(this, subStep);
+    }
+
+    public <R> StepWorkflowConditionalBuilder<T, R> andSometimes(final SubStep<Object, R> subStep) {
+        return new StepWorkflowConditionalBuilder<>(this, subStep);
+    }
+
+    public StepWorkflow<T> build() {
+        return new StepWorkflow<T>(start, end);
     }
 
     public StepWorkflowResponse<T> run() {
-        start.runStep(SubStepResponse.SUCCESS());
-        return new StepWorkflowResponse<>(end.getResponse());
+        return this.build().run();
     }
-
-    public SubStepResponse<T> runAsSubStep() {
-        start.runStep(SubStepResponse.SUCCESS());
-        return end.getResponse();
-    }
-
 }

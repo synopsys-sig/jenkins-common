@@ -22,28 +22,29 @@
  */
 package com.synopsys.integration.stepworkflow;
 
-public class StepWorkflow<T> {
-    private final StepWorkflowController<Object, ?> start;
-    private final StepWorkflowController<?, T> end;
+public class StepWorkflowController<U, S> {
+    private final SubStep<U, S> step;
+    private StepWorkflowController<? super S, ?> next;
+    private SubStepResponse<S> response;
 
-    public StepWorkflow(final StepWorkflowController<Object, ?> start, final StepWorkflowController<?, T> end) {
-        this.start = start;
-        this.end = end;
+    public StepWorkflowController(final SubStep<U, S> current) {
+        this.step = current;
     }
 
-    public StepWorkflow(final StepWorkflowController<Object, T> startAndEnd) {
-        this.start = startAndEnd;
-        this.end = startAndEnd;
+    public SubStepResponse<S> getResponse() {
+        return response;
     }
 
-    public StepWorkflowResponse<T> run() {
-        start.runStep(SubStepResponse.SUCCESS());
-        return new StepWorkflowResponse<>(end.getResponse());
+    public <R> StepWorkflowController<?, R> append(final SubStep<? super S, R> nextStep) {
+        final StepWorkflowController<? super S, R> nextController = new StepWorkflowController<>(nextStep);
+        this.next = nextController;
+        return nextController;
     }
 
-    public SubStepResponse<T> runAsSubStep() {
-        start.runStep(SubStepResponse.SUCCESS());
-        return end.getResponse();
+    public void runStep(final SubStepResponse<? extends U> previousResponse) {
+        response = step.run(previousResponse);
+        if (next != null) {
+            next.runStep(response);
+        }
     }
-
 }
