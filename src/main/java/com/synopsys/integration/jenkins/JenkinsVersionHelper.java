@@ -28,19 +28,10 @@ import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
 public class JenkinsVersionHelper {
-    private static final JenkinsVersionHelper SINGLE_INSTANCE = new JenkinsVersionHelper();
 
     public static final String UNKNOWN_VERSION = "UNKNOWN_VERSION";
 
-    public static String getPluginVersion(final String pluginName) {
-        return SINGLE_INSTANCE.getPluginVersion(pluginName);
-    }
-
-    public static String getJenkinsVersion() {
-        return SINGLE_INSTANCE.getJenkinsVersionInstance();
-    }
-
-    public String getPluginVersionInstance(final String pluginName) {
+    public String getPluginVersion(final String pluginName) {
         String pluginVersion = UNKNOWN_VERSION;
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
@@ -57,7 +48,7 @@ public class JenkinsVersionHelper {
         return pluginVersion;
     }
 
-    public String getJenkinsVersionInstance() {
+    public String getJenkinsVersion() {
         final VersionNumber versionNumber = Jenkins.getVersion();
         if (versionNumber == null) {
             return UNKNOWN_VERSION;

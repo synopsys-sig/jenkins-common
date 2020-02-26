@@ -35,13 +35,9 @@ public class RemoteSubStep<R extends Serializable> implements SubStep<Object, R>
     private final VirtualChannel virtualChannel;
     private final Callable<R, ? extends IntegrationException> callable;
 
-    private RemoteSubStep(final VirtualChannel virtualChannel, final Callable<R, ? extends IntegrationException> callable) {
+    public RemoteSubStep(final VirtualChannel virtualChannel, final Callable<R, ? extends IntegrationException> callable) {
         this.virtualChannel = virtualChannel;
         this.callable = callable;
-    }
-
-    public static <S extends Serializable> RemoteSubStep<S> of(final VirtualChannel virtualChannel, final Callable<S, ? extends IntegrationException> callable) {
-        return new RemoteSubStep<>(virtualChannel, callable);
     }
 
     @Override
