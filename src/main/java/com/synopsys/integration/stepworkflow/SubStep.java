@@ -53,7 +53,7 @@ public interface SubStep<T, R> {
 
     static <T, E extends Exception> SubStep<T, Object> ofConsumer(final ThrowingConsumer<T, E> throwingConsumer) {
         return previousResponse -> SubStep.defaultExecution(previousResponse.isSuccess() && previousResponse.hasData(), previousResponse, () -> {
-            throwingConsumer.apply(previousResponse.getData());
+            throwingConsumer.accept(previousResponse.getData());
             return SubStepResponse.SUCCESS();
         });
     }

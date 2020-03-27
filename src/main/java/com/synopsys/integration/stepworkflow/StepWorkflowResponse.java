@@ -53,7 +53,7 @@ public class StepWorkflowResponse<T> {
     }
 
     public <E extends Throwable> void consumeResponse(final ThrowingConsumer<StepWorkflowResponse<T>, E> responseHandler) throws E {
-        responseHandler.apply(this);
+        responseHandler.accept(this);
     }
 
     public T getDataOrThrowException() throws Exception {
