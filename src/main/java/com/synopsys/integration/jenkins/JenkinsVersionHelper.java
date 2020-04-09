@@ -22,38 +22,24 @@
  */
 package com.synopsys.integration.jenkins;
 
+import java.util.Optional;
+
 import hudson.Plugin;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
 public class JenkinsVersionHelper {
-    public static final String UNKNOWN_VERSION = "UNKNOWN_VERSION";
-
-    public static String getPluginVersion(final String pluginName) {
-        String pluginVersion = UNKNOWN_VERSION;
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            // Jenkins still active
-            final Plugin p = jenkins.getPlugin(pluginName);
-            if (p != null) {
-                // plugin found
-                final PluginWrapper pw = p.getWrapper();
-                if (pw != null) {
-                    pluginVersion = pw.getVersion();
-                }
-            }
-        }
-        return pluginVersion;
+    public static Optional<String> getPluginVersion(final String pluginName) {
+        return Optional.ofNullable(Jenkins.getInstanceOrNull())
+                   .map(jenkins -> jenkins.getPlugin(pluginName))
+                   .map(Plugin::getWrapper)
+                   .map(PluginWrapper::getVersion);
     }
 
-    public static String getJenkinsVersion() {
-        final VersionNumber versionNumber = Jenkins.getVersion();
-        if (versionNumber == null) {
-            return UNKNOWN_VERSION;
-        } else {
-            return versionNumber.toString();
-        }
+    public static Optional<String> getJenkinsVersion() {
+        return Optional.ofNullable(Jenkins.getVersion())
+                   .map(VersionNumber::toString);
     }
 
 }
