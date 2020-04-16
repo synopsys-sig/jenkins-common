@@ -1,5 +1,5 @@
 /**
- * synopsys-polaris
+ * jenkins-common
  *
  * Copyright (c) 2020 Synopsys, Inc.
  *
