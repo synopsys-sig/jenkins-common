@@ -21,9 +21,10 @@ repositories {
 }
 
 dependencies {
-    // This MUST stay in lock step with any $PRODUCT-common you use with this
+    // These MUST stay in lock step with any $PRODUCT-common you use with this
     // --rotte MAR 2020
     api 'com.synopsys.integration:integration-rest:1.0.3'
+    api 'com.synopsys.integration:phone-home-client:2.0.0'
 
     // Unfortunately, without making jenkins-common a fully fledged Jenkins plugin we cannot enforce dependencies on specific Jenkins versions
     // or Jenkins plugin versions in Jenkins plugins that depend on this library.

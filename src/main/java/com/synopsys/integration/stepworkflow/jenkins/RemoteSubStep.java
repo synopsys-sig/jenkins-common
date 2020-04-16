@@ -32,10 +32,10 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 
 public class RemoteSubStep<R extends Serializable> implements SubStep<Object, R> {
-    private final VirtualChannel virtualChannel;
-    private final Callable<R, ? extends IntegrationException> callable;
+    protected final VirtualChannel virtualChannel;
+    protected final Callable<R, ? extends IntegrationException> callable;
 
-    private RemoteSubStep(final VirtualChannel virtualChannel, final Callable<R, ? extends IntegrationException> callable) {
+    protected RemoteSubStep(final VirtualChannel virtualChannel, final Callable<R, ? extends IntegrationException> callable) {
         this.virtualChannel = virtualChannel;
         this.callable = callable;
     }
