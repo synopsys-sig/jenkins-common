@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
+import com.synopsys.integration.log.IntLogger;
+import com.synopsys.integration.log.LogLevel;
+import com.synopsys.integration.log.PrintStreamIntLogger;
 
 import hudson.scm.ChangeLogSet;
 import hudson.scm.EditType;
@@ -17,49 +19,49 @@ public class ChangeSetFilterTest {
     String invalidPath = "invalid_path";
     String dummyPath = "dummy_path";
 
-    EditType editType = new EditType("MockEditTypeName", "MockEditTypeDescription");
-    JenkinsIntLogger MockJenkinsIntLogger = Mockito.mock(JenkinsIntLogger.class);
-    ChangeLogSet.AffectedFile mockAffectedFile = new MockAffectedFile(validPath, editType);
+    EditType editType = new EditType("EditType-Name", "EditType-Description");
+    IntLogger intLogger = new PrintStreamIntLogger(System.out, LogLevel.INFO);
+    ChangeLogSet.AffectedFile mockAffectedFile = createAffectedFile(validPath, editType);
 
     @Test
     public void testShouldIncludeTrue() {
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, "", "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, "", null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, "", validPath).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, invalidPath, "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, invalidPath, null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, invalidPath, validPath).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, null, "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, null, null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(MockJenkinsIntLogger, null, validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, "", "").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, "", null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, "", validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, invalidPath, "").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, invalidPath, null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, invalidPath, validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, null, "").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, null, null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger, null, validPath).shouldInclude(mockAffectedFile));
     }
 
     @Test
     public void testShouldIncludeFalse() {
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, "", invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, invalidPath, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, null, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, validPath, "").shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, validPath, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, validPath, null).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(MockJenkinsIntLogger, validPath, validPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, "", invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, invalidPath, invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, null, invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, validPath, "").shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, validPath, invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, validPath, null).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger, validPath, validPath).shouldInclude(mockAffectedFile));
     }
 
     @Test
     public void testSuccessfulCreateWithPopulatedFilters() {
-        new ChangeSetFilter(MockJenkinsIntLogger, dummyPath, dummyPath);
+        new ChangeSetFilter(intLogger, dummyPath, dummyPath);
     }
 
     @Test
     public void testSuccessfulCreateWithEmptyFilters() {
-        new ChangeSetFilter(MockJenkinsIntLogger, "", "");
+        new ChangeSetFilter(intLogger, "", "");
     }
 
     @Test
     public void testSuccessfulCreateWithNullFilters() {
-        new ChangeSetFilter(MockJenkinsIntLogger, null, dummyPath);
-        new ChangeSetFilter(MockJenkinsIntLogger, dummyPath, null);
-        new ChangeSetFilter(MockJenkinsIntLogger, null, null);
+        new ChangeSetFilter(intLogger, null, dummyPath);
+        new ChangeSetFilter(intLogger, dummyPath, null);
+        new ChangeSetFilter(intLogger, null, null);
     }
 
     @Test
@@ -67,24 +69,10 @@ public class ChangeSetFilterTest {
         ChangeSetFilter.createAcceptAllFilter(null);
     }
 
-    private class MockAffectedFile implements ChangeLogSet.AffectedFile {
-
-        private String path;
-        private EditType editType;
-
-        public MockAffectedFile(String path, EditType editType) {
-            this.path = path;
-            this.editType = editType;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public EditType getEditType() {
-            return editType;
-        }
+    private static ChangeLogSet.AffectedFile createAffectedFile(String path, EditType editType) {
+        ChangeLogSet.AffectedFile mockAffectedFile = Mockito.mock(ChangeLogSet.AffectedFile.class);
+        Mockito.when(mockAffectedFile.getPath()).thenReturn(path);
+        Mockito.when(mockAffectedFile.getEditType()).thenReturn(editType);
+        return mockAffectedFile;
     }
 }
