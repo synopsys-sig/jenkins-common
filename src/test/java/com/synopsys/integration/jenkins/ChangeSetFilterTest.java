@@ -16,12 +16,14 @@ import hudson.scm.EditType;
 public class ChangeSetFilterTest {
 
     String validPath = "valid_path";
+    String validPathWithSlash = "with_slash/valid_path";
     String invalidPath = "invalid_path";
     String dummyPath = "dummy_path";
 
     EditType editType = new EditType("EditType-Name", "EditType-Description");
     IntLogger intLogger = new PrintStreamIntLogger(System.out, LogLevel.INFO);
     ChangeLogSet.AffectedFile mockAffectedFile = createAffectedFile(validPath, editType);
+    ChangeLogSet.AffectedFile mockAffectedFileWithSlash = createAffectedFile(validPathWithSlash, editType);
 
     @Test
     public void testShouldIncludeTrue() {
@@ -34,6 +36,8 @@ public class ChangeSetFilterTest {
         assertTrue(new ChangeSetFilter(intLogger, null, "").shouldInclude(mockAffectedFile));
         assertTrue(new ChangeSetFilter(intLogger, null, null).shouldInclude(mockAffectedFile));
         assertTrue(new ChangeSetFilter(intLogger, null, validPath).shouldInclude(mockAffectedFile));
+
+        assertTrue(new ChangeSetFilter(intLogger, null, validPath).shouldInclude(mockAffectedFileWithSlash));
     }
 
     @Test
@@ -45,6 +49,8 @@ public class ChangeSetFilterTest {
         assertFalse(new ChangeSetFilter(intLogger, validPath, invalidPath).shouldInclude(mockAffectedFile));
         assertFalse(new ChangeSetFilter(intLogger, validPath, null).shouldInclude(mockAffectedFile));
         assertFalse(new ChangeSetFilter(intLogger, validPath, validPath).shouldInclude(mockAffectedFile));
+
+        assertFalse(new ChangeSetFilter(intLogger, validPath, validPath).shouldInclude(mockAffectedFileWithSlash));
     }
 
     @Test
