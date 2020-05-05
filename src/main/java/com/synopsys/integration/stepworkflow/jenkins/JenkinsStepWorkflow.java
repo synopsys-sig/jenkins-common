@@ -41,21 +41,27 @@ import hudson.AbortException;
 public abstract class JenkinsStepWorkflow<T> {
     protected final JenkinsIntLogger logger;
 
-    public JenkinsStepWorkflow(final JenkinsIntLogger jenkinsIntLogger) {
-        this.logger = jenkinsIntLogger;
+    public JenkinsStepWorkflow(final JenkinsIntLogger logger) {
+        this.logger = logger;
     }
 
     protected abstract PhoneHomeRequestBodyBuilder createPhoneHomeBuilder();
 
-    protected abstract void validate() throws AbortException;
-
     protected abstract StepWorkflow<T> buildWorkflow() throws AbortException;
 
-    public StepWorkflowResponse<T> perform() throws AbortException {
+    /**
+     * The public facing method to run this workflow. Implementing classes should call {@link JenkinsStepWorkflow#runWorkflow runWorkflow} in the method body and then either
+     * handle the {@link StepWorkflowResponse StepWorkflowResponse} with response handling logic, or call {@link StepWorkflowResponse#getDataOrThrowException() getDataOrThrowException}.
+     * @return the resulting meaningful data from the workflow execution
+     * @throws Exception
+     */
+    public abstract Object perform() throws Exception;
+
+    protected StepWorkflowResponse<T> runWorkflow() throws AbortException {
         final Optional<PhoneHomeResponse> phoneHomeResponse = beginPhoneHome();
         try {
-            this.validate();
-            return this.buildWorkflow().run();
+            return this.buildWorkflow()
+                       .run();
         } finally {
             phoneHomeResponse.ifPresent(PhoneHomeResponse::getImmediateResult);
         }

@@ -1,6 +1,11 @@
 package com.synopsys.integration.stepworkflow;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 import com.synopsys.integration.exception.IntegrationException;
@@ -13,19 +18,19 @@ public class StepWorkflowTest {
         StepWorkflowResponse<Integer> response = StepWorkflow.just(SubStep.ofSupplier(this::successfulDataSupplier))
                                                      .run();
 
-        Assert.assertTrue(response.wasSuccessful());
-        Assert.assertEquals(DATA, response.getData());
-        Assert.assertNull(response.getException());
+        assertTrue(response.wasSuccessful());
+        assertEquals(DATA, response.getData());
+        assertNull(response.getException());
     }
 
     @Test
     public void testSuccessfulSingleStepDatalessStepWorkflow() {
-        StepWorkflowResponse response = StepWorkflow.just(SubStep.ofExecutor(this::successfulExecutor))
-                                            .run();
+        StepWorkflowResponse<Object> response = StepWorkflow.just(SubStep.ofExecutor(this::successfulExecutor))
+                                                    .run();
 
-        Assert.assertTrue(response.wasSuccessful());
-        Assert.assertNull(response.getData());
-        Assert.assertNull(response.getException());
+        assertTrue(response.wasSuccessful());
+        assertNull(response.getData());
+        assertNull(response.getException());
     }
 
     @Test
@@ -33,9 +38,9 @@ public class StepWorkflowTest {
         StepWorkflowResponse<Integer> response = StepWorkflow.just(SubStep.ofSupplier(this::unsuccessfulDataSupplier))
                                                      .run();
 
-        Assert.assertFalse(response.wasSuccessful());
-        Assert.assertNull(response.getData());
-        Assert.assertNotNull(response.getException());
+        assertFalse(response.wasSuccessful());
+        assertNull(response.getData());
+        assertNotNull(response.getException());
     }
 
     private void successfulExecutor() {
