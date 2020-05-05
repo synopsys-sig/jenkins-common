@@ -23,9 +23,7 @@
 package com.synopsys.integration.stepworkflow;
 
 public abstract class AbstractExecutingSubStep implements SubStep<Object, Object> {
-    public abstract SubStepResponse<Object>
-
-    run();
+    public abstract SubStepResponse<Object> run();
 
     public SubStepResponse<Object> run(final SubStepResponse previousResponse) {
         if (previousResponse.isSuccess()) {
