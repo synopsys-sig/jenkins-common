@@ -11,7 +11,7 @@ plugins { id 'groovy' }
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
 project.ext.javaUseAutoModuleName = 'true'
 
-version = '0.1.12-SNAPSHOT'
+version = '0.1.12'
 description = 'Library for common Synopsys Jenkins plugin logic'
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
