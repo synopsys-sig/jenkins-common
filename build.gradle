@@ -34,4 +34,12 @@ dependencies {
 
     compileOnly 'org.jenkins-ci.plugins:credentials:2.1.10@jar'
     compileOnly 'org.jenkins-ci.plugins:plain-credentials:1.0@jar'
+
+    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    testCompile 'org.mockito:mockito-junit-jupiter:3.3.3'
+}
+
+sourceSets {
+    test.compileClasspath += configurations.compileOnly
+    test.runtimeClasspath += configurations.compileOnly
 }

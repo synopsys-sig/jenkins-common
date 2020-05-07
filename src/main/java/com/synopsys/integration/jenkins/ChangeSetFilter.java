@@ -85,7 +85,7 @@ public class ChangeSetFilter {
         // ChangeLogSet.AffectedFile getPath is normalized to use the / separator
         final String fileName;
         if (filePath.contains("/")) {
-            fileName = filePath.substring(filePath.lastIndexOf("/"));
+            fileName = StringUtils.substringAfter(filePath, "/");
         } else {
             fileName = filePath;
         }
