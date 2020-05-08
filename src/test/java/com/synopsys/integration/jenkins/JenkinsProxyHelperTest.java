@@ -4,92 +4,76 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.synopsys.integration.rest.proxy.ProxyInfo;
 
 public class JenkinsProxyHelperTest {
 
     ProxyInfo proxyInfo;
-    List<Pattern> patterns = new ArrayList<>();
 
-    final String url_1 = "www.include.com";
-    final String url_2 = "www.exclude.com";
+    static String includeHost = "www.include.com";
+    static String excludeHost = "www.exclude.com";
 
-    Pattern pattern_1 = Pattern.compile(url_1);
-    Pattern pattern_2 = Pattern.compile(url_2);
+    static Pattern includePattern = Pattern.compile(includeHost);
+    static Pattern excludePattern = Pattern.compile(excludeHost);
 
-    final String protocol = "https://";
+    static final String url = "https://" + includeHost;
     final String proxyHost = "proxyHost";
     final String proxyUsername = "proxyUsername";
     final String proxyPassword = "proxyPassword";
     final String ntlmDomain = "ntlmDomain";
     final String ntlmWorkstation = "ntlmWorkstation";
 
-    @Test
-    public void testGetProxyInfoFromJenkins_NullJenkins() {
-        proxyInfo = JenkinsProxyHelper.getProxyInfoFromJenkins(protocol + url_1);
+    private static Stream<Arguments> populateNoProxyInfoTests() {
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.add(includePattern);
+        return Stream.of(
+            Arguments.of("", patterns),
+            Arguments.of(null, patterns),
+            Arguments.of(url, patterns)
+        );
+    }
+
+    private static Stream<Arguments> populateValidProxyInfoTests() {
+        return Stream.of(
+            Arguments.of(url, new ArrayList<>()),
+            Arguments.of(url, null),
+            Arguments.of(url, Arrays.asList(excludePattern))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("populateNoProxyInfoTests")
+    public void testGetProxyInfo_NoProxyInfo(String inputUrl, List<Pattern> ignorePatterns) {
+        // The returned proxyInfo object should be equal to ProxyInfo.NO_PROXY_INFO
+        proxyInfo = JenkinsProxyHelper.getProxyInfo(inputUrl, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, ignorePatterns, ntlmDomain, ntlmWorkstation);
         assertFalse(proxyInfo.getHost().isPresent());
         assertEquals(0, proxyInfo.getPort());
     }
 
-    @Test
-    public void testGetProxyInfo_EmptyUrlMatchingExclude() {
-        // The returning proxyInfo object should be equal to ProxyInfo.NO_PROXY_INFO
-        patterns.clear();
-        patterns.add(pattern_1);
-        proxyInfo = JenkinsProxyHelper.getProxyInfo("", proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, patterns, ntlmDomain, ntlmWorkstation);
-        assertFalse(proxyInfo.getHost().isPresent());
-        assertEquals(0, proxyInfo.getPort());
-    }
-
-    @Test
-    public void testGetProxyInfo_NullUrlMatchingExclude() {
-        // The returning proxyInfo object should be equal to ProxyInfo.NO_PROXY_INFO
-        patterns.clear();
-        patterns.add(pattern_1);
-        proxyInfo = JenkinsProxyHelper.getProxyInfo(null, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, patterns, ntlmDomain, ntlmWorkstation);
-        assertFalse(proxyInfo.getHost().isPresent());
-        assertEquals(0, proxyInfo.getPort());
-    }
-
-    @Test
-    public void testGetProxyInfo_ValidUrlMatchingExclude() {
-        // The returning proxyInfo object should be equal to ProxyInfo.NO_PROXY_INFO
-        patterns.clear();
-        patterns.add(pattern_1);
-        proxyInfo = JenkinsProxyHelper.getProxyInfo(protocol + url_1, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, patterns, ntlmDomain, ntlmWorkstation);
-        assertFalse(proxyInfo.getHost().isPresent());
-        assertEquals(0, proxyInfo.getPort());
-    }
-
-    @Test
-    public void testGetProxyInfo_ValidUrlEmptyExclude() {
-        // The returning proxyInfo object should be populated with the values supplied to getProxyInfo
-        patterns.clear();
-        proxyInfo = JenkinsProxyHelper.getProxyInfo(protocol + url_1, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, patterns, ntlmDomain, ntlmWorkstation);
+    @ParameterizedTest
+    @MethodSource("populateValidProxyInfoTests")
+    public void testGetProxyInfo_PopulatedProxyInfo(String inputUrl, List<Pattern> ignorePatterns) {
+        // The returned proxyInfo object should be populated with the values supplied to getProxyInfo
+        proxyInfo = JenkinsProxyHelper.getProxyInfo(inputUrl, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, ignorePatterns, ntlmDomain, ntlmWorkstation);
         assertEquals(proxyHost, proxyInfo.getHost().orElse(null));
         assertEquals(Integer.MAX_VALUE, proxyInfo.getPort());
     }
 
     @Test
-    public void testGetProxyInfo_ValidUrlNullExclude() {
-        // The returning proxyInfo object should be populated with the values supplied to getProxyInfo
-        proxyInfo = JenkinsProxyHelper.getProxyInfo(protocol + url_1, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, null, ntlmDomain, ntlmWorkstation);
-        assertEquals(proxyUsername, proxyInfo.getUsername().orElse(null));
-        assertEquals(proxyPassword, proxyInfo.getPassword().orElse(null));
+    public void testGetProxyInfoFromJenkins_NullJenkins() {
+        proxyInfo = JenkinsProxyHelper.getProxyInfoFromJenkins(url);
+        assertFalse(proxyInfo.getHost().isPresent());
+        assertEquals(0, proxyInfo.getPort());
     }
 
-    @Test
-    public void testGetProxyInfo_ValidUrlNonMatchingExclude() {
-        // The returning proxyInfo object should be populated with the values supplied to getProxyInfo
-        patterns.clear();
-        patterns.add(pattern_2);
-        proxyInfo = JenkinsProxyHelper.getProxyInfo(protocol + url_1, proxyHost, Integer.MAX_VALUE, proxyUsername, proxyPassword, patterns, ntlmDomain, ntlmWorkstation);
-        assertEquals(ntlmDomain, proxyInfo.getNtlmDomain().orElse(null));
-        assertEquals(ntlmWorkstation, proxyInfo.getNtlmWorkstation().orElse(null));
-    }
 }
