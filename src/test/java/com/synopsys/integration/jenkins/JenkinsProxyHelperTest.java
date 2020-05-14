@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -57,10 +56,10 @@ public class JenkinsProxyHelperTest {
     public void testGetProxyInfo_NoProxyInfo(String url, List<Pattern> ignoredProxyHosts) {
         // The returned proxyInfo object should be equal to ProxyInfo.NO_PROXY_INFO
         ProxyInfo proxyInfo = JenkinsProxyHelper.getProxyInfo(url, proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, ntlmDomain, ntlmWorkstation);
-        assertEquals(ProxyInfo.NO_PROXY_INFO.getProxy().isPresent(), proxyInfo.getProxy().isPresent());
-        assertEquals(ProxyInfo.NO_PROXY_INFO.getHost().isPresent(), proxyInfo.getHost().isPresent());
+        assertEquals(ProxyInfo.NO_PROXY_INFO.getProxy(), proxyInfo.getProxy());
+        assertEquals(ProxyInfo.NO_PROXY_INFO.getHost(), proxyInfo.getHost());
         assertEquals(ProxyInfo.NO_PROXY_INFO.getPort(), proxyInfo.getPort());
-        assertEquals(ProxyInfo.NO_PROXY_INFO.getProxyCredentials().isPresent(), proxyInfo.getProxyCredentials().isPresent());
+        assertEquals(ProxyInfo.NO_PROXY_INFO.getProxyCredentials(), proxyInfo.getProxyCredentials());
         assertEquals(ProxyInfo.NO_PROXY_INFO.getUsername(), proxyInfo.getUsername());
         assertEquals(ProxyInfo.NO_PROXY_INFO.getPassword(), proxyInfo.getPassword());
         assertEquals(ProxyInfo.NO_PROXY_INFO.getNtlmDomain(), proxyInfo.getNtlmDomain());
@@ -74,13 +73,13 @@ public class JenkinsProxyHelperTest {
         ProxyInfo proxyInfo = JenkinsProxyHelper.getProxyInfo(url, proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, ntlmDomain, ntlmWorkstation);
         assertTrue(proxyInfo.getProxy().isPresent());
         assertTrue(proxyInfo.getHost().isPresent());
-        assertEquals(proxyHost, proxyInfo.getHost().orElse(null));
+        assertEquals(proxyHost, proxyInfo.getHost().get());
         assertEquals(proxyPort, proxyInfo.getPort());
         assertTrue(proxyInfo.getProxyCredentials().isPresent());
-        assertEquals(Optional.of(proxyUsername), proxyInfo.getUsername());
-        assertEquals(Optional.of(proxyPassword), proxyInfo.getPassword());
-        assertEquals(Optional.of(ntlmDomain), proxyInfo.getNtlmDomain());
-        assertEquals(Optional.of(ntlmWorkstation), proxyInfo.getNtlmWorkstation());
+        assertEquals(proxyUsername, proxyInfo.getUsername().get());
+        assertEquals(proxyPassword, proxyInfo.getPassword().get());
+        assertEquals(ntlmDomain, proxyInfo.getNtlmDomain().get());
+        assertEquals(ntlmWorkstation, proxyInfo.getNtlmWorkstation().get());
     }
 
     @Test
