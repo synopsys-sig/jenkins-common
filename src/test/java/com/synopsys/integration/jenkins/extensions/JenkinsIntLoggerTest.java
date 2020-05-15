@@ -102,14 +102,16 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_alwaysLog(String txt, Throwable e, LogLevel logLevel, String expected) {
-        if (e == null) {
-            JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
-            jenkinsIntLogger.setLogLevel(logLevel);
-            jenkinsIntLogger.alwaysLog(txt);
-            assertNull(jenkinsIntLogger.getTaskListener());
-            assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
-            assertEquals(expected, byteArrayOutputStream.toString());
+        if (e != null) {
+            throw new IllegalArgumentException("Test requires that e is null");
         }
+
+        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        jenkinsIntLogger.setLogLevel(logLevel);
+        jenkinsIntLogger.alwaysLog(txt);
+        assertNull(jenkinsIntLogger.getTaskListener());
+        assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
+        assertEquals(expected, byteArrayOutputStream.toString());
     }
 
     @ParameterizedTest
@@ -134,31 +136,35 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_warn(String txt, Throwable e, LogLevel logLevel, String expected) {
+        if (e != null) {
+            throw new IllegalArgumentException("Test requires that e is null");
+        }
+
         JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.WARN) ? expected : "";
 
-        if (e == null) {
-            jenkinsIntLogger.warn(txt);
+        jenkinsIntLogger.warn(txt);
 
-            assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
-            assertEquals(expected, byteArrayOutputStream.toString());
-        }
+        assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
+        assertEquals(expected, byteArrayOutputStream.toString());
     }
 
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_info(String txt, Throwable e, LogLevel logLevel, String expected) {
+        if (e != null) {
+            throw new IllegalArgumentException("Test requires that e is null");
+        }
+
         JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.INFO) ? expected : "";
 
-        if (e == null) {
-            jenkinsIntLogger.info(txt);
+        jenkinsIntLogger.info(txt);
 
-            assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
-            assertEquals(expected, byteArrayOutputStream.toString());
-        }
+        assertEquals(logLevel, jenkinsIntLogger.getLogLevel());
+        assertEquals(expected, byteArrayOutputStream.toString());
     }
 
     @ParameterizedTest
