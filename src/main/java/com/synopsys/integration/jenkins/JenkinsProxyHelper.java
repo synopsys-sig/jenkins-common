@@ -40,34 +40,53 @@ import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelper {
-    public static ProxyInfo getProxyInfoFromJenkins(final String url) {
-        final ProxyConfiguration proxyConfig = Optional.ofNullable(Jenkins.getInstanceOrNull())
-                                                   .map(jenkins -> jenkins.proxy)
-                                                   .orElse(null);
-        if (proxyConfig == null) {
-            return ProxyInfo.NO_PROXY_INFO;
-        }
+    private String url;
+    private String proxyHost;
+    private int proxyPort;
+    private String proxyUsername;
+    private String proxyPassword;
+    private List<Pattern> ignoredProxyHosts;
+    private String ntlmDomain;
+    private String ntlmWorkstation;
+    private ProxyInfo proxyInfo = ProxyInfo.NO_PROXY_INFO;
 
-        String username = null;
-        String ntlmDomain = null;
-        if (StringUtils.isNotBlank(proxyConfig.getUserName())) {
-            final String[] possiblyDomainSlashUsername = proxyConfig.getUserName().split(Pattern.quote("\\"));
+    public JenkinsProxyHelper(final ProxyConfiguration proxyConfiguration, final String url) {
+        this.url = url;
+
+        this.proxyHost = proxyConfiguration.name;
+        this.proxyPort = proxyConfiguration.port;
+        this.proxyPassword = proxyConfiguration.getPassword();
+        this.ignoredProxyHosts = proxyConfiguration.getNoProxyHostPatterns();
+        this.ntlmWorkstation = StringUtils.EMPTY;
+
+        if (StringUtils.isNotBlank(proxyConfiguration.getUserName())) {
+            final String[] possiblyDomainSlashUsername = proxyConfiguration.getUserName().split(Pattern.quote("\\"));
             if (possiblyDomainSlashUsername.length == 1 || possiblyDomainSlashUsername[0].length() == 0) {
-                ntlmDomain = null;
-                username = proxyConfig.getUserName();
+                this.ntlmDomain = null;
+                this.proxyUsername = proxyConfiguration.getUserName();
             } else {
-                ntlmDomain = possiblyDomainSlashUsername[0];
-                username = possiblyDomainSlashUsername[1];
+                this.ntlmDomain = possiblyDomainSlashUsername[0];
+                this.proxyUsername = possiblyDomainSlashUsername[1];
             }
+        } else {
+            this.ntlmDomain = null;
+            this.proxyUsername = null;
         }
-
-        return getProxyInfo(url, proxyConfig.name, proxyConfig.port, username, proxyConfig.getPassword(), proxyConfig.getNoProxyHostPatterns(), ntlmDomain, StringUtils.EMPTY);
     }
 
-    public static ProxyInfo getProxyInfo(final String url, final String proxyHost, final int proxyPort, final String proxyUsername, final String proxyPassword, final List<Pattern> ignoredProxyHosts, final String ntlmDomain,
-        final String ntlmWorkstation) {
-        ProxyInfo proxyInfo = ProxyInfo.NO_PROXY_INFO;
+    public JenkinsProxyHelper(final String url, final String proxyHost, final int proxyPort, final String proxyUsername, final String proxyPassword, final List<Pattern> ignoredProxyHosts, final String ntlmDomain,
+        String ntlmWorkstation) {
+        this.url = url;
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
+        this.proxyUsername = proxyUsername;
+        this.proxyPassword = proxyPassword;
+        this.ignoredProxyHosts = ignoredProxyHosts;
+        this.ntlmDomain = ntlmDomain;
+        this.ntlmWorkstation = ntlmWorkstation;
+    }
 
+    public ProxyInfo getProxyInfo() {
         if (shouldUseProxy(url, ignoredProxyHosts)) {
             final ProxyInfoBuilder proxyInfoBuilder = ProxyInfo.newBuilder();
 
@@ -81,13 +100,12 @@ public class JenkinsProxyHelper {
             proxyInfoBuilder.setNtlmWorkstation(StringUtils.trimToNull(ntlmWorkstation));
 
             proxyInfo = proxyInfoBuilder.build();
-
         }
 
         return proxyInfo;
     }
 
-    private static boolean shouldUseProxy(final String url, final List<Pattern> noProxyHosts) {
+    private boolean shouldUseProxy(final String url, final List<Pattern> noProxyHosts) {
         try {
             final URL actualURL = new URL(url);
             return !shouldIgnoreHost(actualURL.getHost(), noProxyHosts);
@@ -96,7 +114,7 @@ public class JenkinsProxyHelper {
         }
     }
 
-    private static boolean shouldIgnoreHost(final String hostToMatch, final List<Pattern> ignoredProxyHostPatterns) {
+    private boolean shouldIgnoreHost(final String hostToMatch, final List<Pattern> ignoredProxyHostPatterns) {
         if (StringUtils.isBlank(hostToMatch) || ignoredProxyHostPatterns == null || ignoredProxyHostPatterns.isEmpty()) {
             return false;
         }
@@ -108,6 +126,25 @@ public class JenkinsProxyHelper {
             }
         }
         return false;
+    }
+
+    @Deprecated
+    public static ProxyInfo getProxyInfoFromJenkins(final String url) {
+        final ProxyConfiguration proxyConfiguration = Optional.ofNullable(Jenkins.getInstanceOrNull())
+                                                    .map(jenkins -> jenkins.proxy)
+                                                    .orElse(null);
+
+        if (proxyConfiguration == null) {
+            return ProxyInfo.NO_PROXY_INFO;
+        } else {
+            return new JenkinsProxyHelper(proxyConfiguration, url).getProxyInfo();
+        }
+    }
+
+    @Deprecated
+    public static ProxyInfo getProxyInfo(final String url, final String proxyHost, final int proxyPort, final String proxyUsername, final String proxyPassword, final List<Pattern> ignoredProxyHosts, final String ntlmDomain,
+        final String ntlmWorkstation) {
+        return new JenkinsProxyHelper(url, proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, ntlmDomain, ntlmWorkstation).getProxyInfo();
     }
 
 }
