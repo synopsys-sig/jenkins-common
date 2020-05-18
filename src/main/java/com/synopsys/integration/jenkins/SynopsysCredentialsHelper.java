@@ -28,61 +28,67 @@ import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 
+import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import com.cloudbees.plugins.credentials.matchers.IdMatcher;
+import com.synopsys.integration.rest.credentials.CredentialsBuilder;
 
 import hudson.security.ACL;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 
 public class SynopsysCredentialsHelper {
-    private static final Class<StringCredentialsImpl> API_TOKEN_CREDENTIALS_CLASS = StringCredentialsImpl.class;
+    public static final Class<StringCredentialsImpl> API_TOKEN_CREDENTIALS_CLASS = StringCredentialsImpl.class;
     public static final CredentialsMatcher API_TOKEN_CREDENTIALS = CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS);
-    private static final Class<UsernamePasswordCredentialsImpl> USERNAME_PASSWORD_CREDENTIALS_CLASS = UsernamePasswordCredentialsImpl.class;
+    public static final Class<UsernamePasswordCredentialsImpl> USERNAME_PASSWORD_CREDENTIALS_CLASS = UsernamePasswordCredentialsImpl.class;
     public static final CredentialsMatcher API_TOKEN_OR_USERNAME_PASSWORD_CREDENTIALS = CredentialsMatchers
                                                                                             .either(CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS), CredentialsMatchers.instanceOf(USERNAME_PASSWORD_CREDENTIALS_CLASS));
+    private final Jenkins jenkins;
 
-    public static Optional<String> getUsernameCredentialsId(final String credentialsId) {
-        return getUsernamePasswordCredentialsById(credentialsId)
-                   .map(UsernamePasswordCredentialsImpl::getUsername);
+    public SynopsysCredentialsHelper(final Jenkins jenkins) {
+        this.jenkins = jenkins;
     }
 
-    public static Optional<String> getPasswordCredentialsId(final String credentialsId) {
-        return getUsernamePasswordCredentialsById(credentialsId)
-                   .map(UsernamePasswordCredentialsImpl::getPassword)
-                   .map(Secret::getPlainText);
+    public com.synopsys.integration.rest.credentials.Credentials getIntegrationCredentialsById(final String credentialsId) {
+        Optional<UsernamePasswordCredentialsImpl> credentials = getUsernamePasswordCredentialsById(credentialsId);
+
+        CredentialsBuilder credentialsBuilder = com.synopsys.integration.rest.credentials.Credentials.newBuilder();
+
+        credentials.map(UsernamePasswordCredentialsImpl::getUsername)
+            .ifPresent(credentialsBuilder::setUsername);
+
+        credentials.map(UsernamePasswordCredentialsImpl::getPassword)
+            .map(Secret::getPlainText)
+            .ifPresent(credentialsBuilder::setPassword);
+
+        return credentialsBuilder.build();
     }
 
-    public static Optional<String> getApiTokenByCredentialsId(final String credentialsId) {
+    public Optional<String> getApiTokenByCredentialsId(final String credentialsId) {
         return getApiTokenCredentialsById(credentialsId)
                    .map(StringCredentialsImpl::getSecret)
                    .map(Secret::getPlainText);
     }
 
-    public static Optional<UsernamePasswordCredentialsImpl> getUsernamePasswordCredentialsById(final String credentialsId) {
-        return getCredentialsById(credentialsId)
-                   .filter(USERNAME_PASSWORD_CREDENTIALS_CLASS::isInstance)
-                   .map(USERNAME_PASSWORD_CREDENTIALS_CLASS::cast);
+    public Optional<UsernamePasswordCredentialsImpl> getUsernamePasswordCredentialsById(final String credentialsId) {
+        return getCredentialsById(USERNAME_PASSWORD_CREDENTIALS_CLASS, credentialsId);
     }
 
-    public static Optional<StringCredentialsImpl> getApiTokenCredentialsById(final String credentialsId) {
-        return getCredentialsById(credentialsId)
-                   .filter(API_TOKEN_CREDENTIALS_CLASS::isInstance)
-                   .map(API_TOKEN_CREDENTIALS_CLASS::cast);
+    public Optional<StringCredentialsImpl> getApiTokenCredentialsById(final String credentialsId) {
+        return getCredentialsById(API_TOKEN_CREDENTIALS_CLASS, credentialsId);
     }
 
-    public static Optional<BaseStandardCredentials> getCredentialsById(final String credentialsId) {
+    public <T extends Credentials> Optional<T> getCredentialsById(final Class<T> credentialsType, final String credentialsId) {
         if (StringUtils.isBlank(credentialsId)) {
             return Optional.empty();
         }
 
         final IdMatcher idMatcher = new IdMatcher(credentialsId);
 
-        return CredentialsProvider.lookupCredentials(BaseStandardCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.emptyList()).stream()
+        return CredentialsProvider.lookupCredentials(credentialsType, jenkins, ACL.SYSTEM, Collections.emptyList()).stream()
                    .filter(idMatcher::matches)
                    .findAny();
     }
