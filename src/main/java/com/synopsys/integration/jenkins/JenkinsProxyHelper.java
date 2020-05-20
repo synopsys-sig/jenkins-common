@@ -83,8 +83,6 @@ public class JenkinsProxyHelper {
             proxyInfoBuilder.setNtlmWorkstation(StringUtils.trimToNull(ntlmWorkstation));
 
             proxyInfo = proxyInfoBuilder.build();
-        } else {
-            proxyInfo = ProxyInfo.NO_PROXY_INFO;
         }
 
         return proxyInfo;
