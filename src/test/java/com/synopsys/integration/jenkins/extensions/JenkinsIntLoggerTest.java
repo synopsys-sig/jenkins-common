@@ -102,9 +102,8 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_alwaysLog(String txt, Throwable e, LogLevel logLevel, String expected) {
-        if (e != null) {
-            throw new IllegalArgumentException("Test requires that e is null");
-        }
+
+        assertNull(e, "This test requires that e is null.");
 
         JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
         jenkinsIntLogger.setLogLevel(logLevel);
@@ -136,9 +135,7 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_warn(String txt, Throwable e, LogLevel logLevel, String expected) {
-        if (e != null) {
-            throw new IllegalArgumentException("Test requires that e is null");
-        }
+        assertNull(e, "This test requires that e is null.");
 
         JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
         jenkinsIntLogger.setLogLevel(logLevel);
@@ -153,9 +150,7 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource("txtTestData")
     public void testJenkinsIntLogger_info(String txt, Throwable e, LogLevel logLevel, String expected) {
-        if (e != null) {
-            throw new IllegalArgumentException("Test requires that e is null");
-        }
+        assertNull(e, "This test requires that e is null.");
 
         JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
         jenkinsIntLogger.setLogLevel(logLevel);
