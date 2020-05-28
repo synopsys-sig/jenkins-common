@@ -1,9 +1,6 @@
 buildscript {
     apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
-    ////////// START BUILDSCRIPT DEPENDENCY //////////
-dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.6.1" }
-
-////////// END BUILDSCRIPT DEPENDENCY //////////
+    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
 }
 
 plugins { id 'groovy' }
@@ -11,7 +8,7 @@ plugins { id 'groovy' }
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
 project.ext.javaUseAutoModuleName = 'true'
 
-version = '0.1.14'
+version = '0.1.15-SNAPSHOT'
 description = 'Library for common Synopsys Jenkins plugin logic'
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
