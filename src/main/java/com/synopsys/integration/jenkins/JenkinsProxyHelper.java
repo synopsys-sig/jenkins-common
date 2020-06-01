@@ -40,18 +40,52 @@ import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelper {
-    public static ProxyInfo getProxyInfoFromJenkins(final String url) {
-        final ProxyConfiguration proxyConfig = Optional.ofNullable(Jenkins.getInstanceOrNull())
-                                                   .map(jenkins -> jenkins.proxy)
-                                                   .orElse(null);
+    private static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
+    private final boolean isBlank;
+
+    private final String proxyHost;
+    private final int proxyPort;
+    private final String proxyUsername;
+    private final String proxyPassword;
+    private final List<Pattern> ignoredProxyHosts;
+    private final String ntlmDomain;
+    private final String ntlmWorkstation;
+
+    public JenkinsProxyHelper(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, List<Pattern> ignoredProxyHosts, String ntlmDomain,
+        String ntlmWorkstation) {
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
+        this.proxyUsername = proxyUsername;
+        this.proxyPassword = proxyPassword;
+        this.ignoredProxyHosts = ignoredProxyHosts;
+        this.ntlmDomain = ntlmDomain;
+        this.ntlmWorkstation = ntlmWorkstation;
+        this.isBlank = false;
+    }
+
+    public JenkinsProxyHelper() {
+        this.proxyHost = null;
+        this.proxyPort = 0;
+        this.proxyUsername = null;
+        this.proxyPassword = null;
+        this.ignoredProxyHosts = null;
+        this.ntlmDomain = null;
+        this.ntlmWorkstation = null;
+        this.isBlank = true;
+    }
+
+    public static JenkinsProxyHelper fromJenkins(Jenkins jenkins) {
+        ProxyConfiguration proxyConfig = Optional.ofNullable(jenkins)
+                                             .map(instance -> instance.proxy)
+                                             .orElse(null);
         if (proxyConfig == null) {
-            return ProxyInfo.NO_PROXY_INFO;
+            return NO_PROXY;
         }
 
         String username = null;
         String ntlmDomain = null;
         if (StringUtils.isNotBlank(proxyConfig.getUserName())) {
-            final String[] possiblyDomainSlashUsername = proxyConfig.getUserName().split(Pattern.quote("\\"));
+            String[] possiblyDomainSlashUsername = proxyConfig.getUserName().split(Pattern.quote("\\"));
             if (possiblyDomainSlashUsername.length == 1 || possiblyDomainSlashUsername[0].length() == 0) {
                 ntlmDomain = null;
                 username = proxyConfig.getUserName();
@@ -61,48 +95,43 @@ public class JenkinsProxyHelper {
             }
         }
 
-        return getProxyInfo(url, proxyConfig.name, proxyConfig.port, username, proxyConfig.getPassword(), proxyConfig.getNoProxyHostPatterns(), ntlmDomain, StringUtils.EMPTY);
+        return new JenkinsProxyHelper(proxyConfig.name, proxyConfig.port, username, proxyConfig.getPassword(), proxyConfig.getNoProxyHostPatterns(), ntlmDomain, StringUtils.EMPTY);
     }
 
-    public static ProxyInfo getProxyInfo(final String url, final String proxyHost, final int proxyPort, final String proxyUsername, final String proxyPassword, final List<Pattern> ignoredProxyHosts, final String ntlmDomain,
-        final String ntlmWorkstation) {
-        ProxyInfo proxyInfo = ProxyInfo.NO_PROXY_INFO;
-
-        if (shouldUseProxy(url, ignoredProxyHosts)) {
-            final ProxyInfoBuilder proxyInfoBuilder = ProxyInfo.newBuilder();
-
-            final CredentialsBuilder credentialsBuilder = Credentials.newBuilder();
-            credentialsBuilder.setUsernameAndPassword(proxyUsername, proxyPassword);
-
-            proxyInfoBuilder.setHost(proxyHost);
-            proxyInfoBuilder.setPort(proxyPort);
-            proxyInfoBuilder.setCredentials(credentialsBuilder.build());
-            proxyInfoBuilder.setNtlmDomain(StringUtils.trimToNull(ntlmDomain));
-            proxyInfoBuilder.setNtlmWorkstation(StringUtils.trimToNull(ntlmWorkstation));
-
-            proxyInfo = proxyInfoBuilder.build();
-
+    public ProxyInfo getProxyInfo(String url) {
+        if (isBlank || shouldNotUseProxy(url)) {
+            return ProxyInfo.NO_PROXY_INFO;
         }
 
-        return proxyInfo;
+        CredentialsBuilder credentialsBuilder = Credentials.newBuilder();
+        credentialsBuilder.setUsernameAndPassword(proxyUsername, proxyPassword);
+
+        ProxyInfoBuilder proxyInfoBuilder = ProxyInfo.newBuilder();
+        proxyInfoBuilder.setHost(proxyHost);
+        proxyInfoBuilder.setPort(proxyPort);
+        proxyInfoBuilder.setCredentials(credentialsBuilder.build());
+        proxyInfoBuilder.setNtlmDomain(StringUtils.trimToNull(ntlmDomain));
+        proxyInfoBuilder.setNtlmWorkstation(StringUtils.trimToNull(ntlmWorkstation));
+
+        return proxyInfoBuilder.build();
     }
 
-    private static boolean shouldUseProxy(final String url, final List<Pattern> noProxyHosts) {
+    private boolean shouldNotUseProxy(String url) {
         try {
-            final URL actualURL = new URL(url);
-            return !shouldIgnoreHost(actualURL.getHost(), noProxyHosts);
-        } catch (final MalformedURLException e) {
-            return false;
+            URL actualURL = new URL(url);
+            return shouldIgnoreHost(actualURL.getHost());
+        } catch (MalformedURLException e) {
+            return true;
         }
     }
 
-    private static boolean shouldIgnoreHost(final String hostToMatch, final List<Pattern> ignoredProxyHostPatterns) {
-        if (StringUtils.isBlank(hostToMatch) || ignoredProxyHostPatterns == null || ignoredProxyHostPatterns.isEmpty()) {
+    private boolean shouldIgnoreHost(String hostToMatch) {
+        if (StringUtils.isBlank(hostToMatch) || ignoredProxyHosts == null || ignoredProxyHosts.isEmpty()) {
             return false;
         }
 
-        for (final Pattern ignoredProxyHostPattern : ignoredProxyHostPatterns) {
-            final Matcher m = ignoredProxyHostPattern.matcher(hostToMatch);
+        for (Pattern ignoredProxyHostPattern : ignoredProxyHosts) {
+            Matcher m = ignoredProxyHostPattern.matcher(hostToMatch);
             if (m.matches()) {
                 return true;
             }
