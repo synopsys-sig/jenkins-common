@@ -38,6 +38,8 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.6.2'
     testCompile 'org.mockito:mockito-junit-jupiter:3.3.3'
+
+    testRuntime 'javax.servlet:javax.servlet-api:4.0.1'
 }
 
 sourceSets {
