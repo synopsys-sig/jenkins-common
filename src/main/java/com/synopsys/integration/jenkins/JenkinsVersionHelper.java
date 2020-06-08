@@ -34,8 +34,6 @@ public class JenkinsVersionHelper {
 
     public JenkinsVersionHelper(Jenkins jenkins) {
         this.jenkins = jenkins;
-
-        Jenkins.getVersion();
     }
 
     public Optional<String> getPluginVersion(String pluginName) {
