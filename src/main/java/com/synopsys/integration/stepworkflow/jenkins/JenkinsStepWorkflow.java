@@ -40,9 +40,11 @@ import hudson.AbortException;
 
 public abstract class JenkinsStepWorkflow<T> {
     protected final JenkinsIntLogger logger;
+    private JenkinsVersionHelper jenkinsVersionHelper;
 
-    public JenkinsStepWorkflow(final JenkinsIntLogger logger) {
+    public JenkinsStepWorkflow(JenkinsIntLogger logger, JenkinsVersionHelper jenkinsVersionHelper) {
         this.logger = logger;
+        this.jenkinsVersionHelper = jenkinsVersionHelper;
     }
 
     protected abstract PhoneHomeRequestBodyBuilder createPhoneHomeBuilder();
@@ -58,7 +60,7 @@ public abstract class JenkinsStepWorkflow<T> {
     public abstract Object perform() throws Exception;
 
     protected StepWorkflowResponse<T> runWorkflow() throws AbortException {
-        final Optional<PhoneHomeResponse> phoneHomeResponse = beginPhoneHome();
+        Optional<PhoneHomeResponse> phoneHomeResponse = beginPhoneHome();
         try {
             return this.buildWorkflow()
                        .run();
@@ -69,22 +71,22 @@ public abstract class JenkinsStepWorkflow<T> {
 
     protected Optional<PhoneHomeResponse> beginPhoneHome() {
         try {
-            final PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger);
-            final ExecutorService executor = Executors.newSingleThreadExecutor();
-            final PhoneHomeService phoneHomeService = PhoneHomeService.createAsynchronousPhoneHomeService(logger, phoneHomeClient, executor);
+            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            PhoneHomeService phoneHomeService = PhoneHomeService.createAsynchronousPhoneHomeService(logger, phoneHomeClient, executor);
 
-            final PhoneHomeRequestBodyBuilder phoneHomeRequestBodyBuilder = this.createPhoneHomeBuilder();
-            final PhoneHomeRequestBody phoneHomeRequestBody = this.addJenkinsMetadataAndBuildPhoneHomeRequest(phoneHomeRequestBodyBuilder);
+            PhoneHomeRequestBodyBuilder phoneHomeRequestBodyBuilder = this.createPhoneHomeBuilder();
+            PhoneHomeRequestBody phoneHomeRequestBody = this.addJenkinsMetadataAndBuildPhoneHomeRequest(phoneHomeRequestBodyBuilder);
             return Optional.ofNullable(phoneHomeService.phoneHome(phoneHomeRequestBody));
-        } catch (final Exception e) {
+        } catch (Exception e) {
             logger.trace("Phone home failed due to an unexpected exception:", e);
         }
 
         return Optional.empty();
     }
 
-    protected PhoneHomeRequestBody addJenkinsMetadataAndBuildPhoneHomeRequest(final PhoneHomeRequestBodyBuilder phoneHomeRequestBodyBuilder) {
-        JenkinsVersionHelper.getJenkinsVersion()
+    protected PhoneHomeRequestBody addJenkinsMetadataAndBuildPhoneHomeRequest(PhoneHomeRequestBodyBuilder phoneHomeRequestBodyBuilder) {
+        jenkinsVersionHelper.getJenkinsVersion()
             .ifPresent(jenkinsVersionString -> phoneHomeRequestBodyBuilder.addToMetaData("jenkins.version", jenkinsVersionString));
         return phoneHomeRequestBodyBuilder.build();
     }
