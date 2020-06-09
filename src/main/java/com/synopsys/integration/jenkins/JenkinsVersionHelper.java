@@ -30,14 +30,20 @@ import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
 public class JenkinsVersionHelper {
-    public static Optional<String> getPluginVersion(final String pluginName) {
-        return Optional.ofNullable(Jenkins.getInstanceOrNull())
+    private Jenkins jenkins;
+
+    public JenkinsVersionHelper(Jenkins jenkins) {
+        this.jenkins = jenkins;
+    }
+
+    public Optional<String> getPluginVersion(String pluginName) {
+        return Optional.ofNullable(jenkins)
                    .map(jenkins -> jenkins.getPlugin(pluginName))
                    .map(Plugin::getWrapper)
                    .map(PluginWrapper::getVersion);
     }
 
-    public static Optional<String> getJenkinsVersion() {
+    public Optional<String> getJenkinsVersion() {
         return Optional.ofNullable(Jenkins.getVersion())
                    .map(VersionNumber::toString);
     }
