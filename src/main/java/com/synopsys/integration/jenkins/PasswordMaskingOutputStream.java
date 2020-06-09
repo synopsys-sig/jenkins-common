@@ -31,18 +31,18 @@ import org.apache.commons.lang3.StringUtils;
 import hudson.console.LineTransformationOutputStream;
 
 public class PasswordMaskingOutputStream extends LineTransformationOutputStream {
-    public static String MASKED_PASSWORD = "********";
+    public static final String MASKED_PASSWORD = "********";
 
     private final OutputStream wrappedOutputStream;
     private final String passwordToMask;
 
-    public PasswordMaskingOutputStream(final OutputStream wrappedOutputStream, final String passwordToMask) {
+    public PasswordMaskingOutputStream(OutputStream wrappedOutputStream, String passwordToMask) {
         this.wrappedOutputStream = wrappedOutputStream;
         this.passwordToMask = passwordToMask;
     }
 
     @Override
-    protected void eol(final byte[] bytes, final int len) throws IOException {
+    protected void eol(byte[] bytes, int len) throws IOException {
         String line = new String(bytes, 0, len, StandardCharsets.UTF_8);
 
         if (StringUtils.isNotBlank(passwordToMask)) {
