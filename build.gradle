@@ -8,7 +8,7 @@ plugins { id 'groovy' }
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
 project.ext.javaUseAutoModuleName = 'true'
 
-version = '0.1.15-SNAPSHOT'
+version = '0.2.0-SNAPSHOT'
 description = 'Library for common Synopsys Jenkins plugin logic'
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -23,7 +23,7 @@ repositories {
 dependencies {
     // These MUST stay in lock step with any $PRODUCT-common you use with this
     // --rotte MAR 2020
-    api 'com.synopsys.integration:integration-rest:1.0.3'
+    api 'com.synopsys.integration:integration-rest:1.0.5'
     api 'com.synopsys.integration:phone-home-client:2.0.0'
 
     // added by gradle jpi plugin to our plugins
