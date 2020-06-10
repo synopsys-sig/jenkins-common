@@ -40,7 +40,7 @@ import hudson.AbortException;
 
 public abstract class JenkinsStepWorkflow<T> {
     protected final JenkinsIntLogger logger;
-    private JenkinsVersionHelper jenkinsVersionHelper;
+    protected final JenkinsVersionHelper jenkinsVersionHelper;
 
     public JenkinsStepWorkflow(JenkinsIntLogger logger, JenkinsVersionHelper jenkinsVersionHelper) {
         this.logger = logger;
