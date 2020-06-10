@@ -10,14 +10,14 @@ public class JenkinsSelectBoxEnumTest {
 
     @Test
     public void testJenkinsSelectBoxEnum() {
-        ChangeBuildStatusTo[] changeBuildStatusTos = { ChangeBuildStatusTo.SUCCESS, ChangeBuildStatusTo.FAILURE, ChangeBuildStatusTo.UNSTABLE };
-        ListBoxModel listBoxModel = JenkinsSelectBoxEnum.toListBoxModel(changeBuildStatusTos);
+        JenkinsSelectBoxEnum[] jenkinsSelectBoxEnums = { ChangeBuildStatusTo.SUCCESS, ChangeBuildStatusTo.FAILURE, ChangeBuildStatusTo.UNSTABLE };
+        ListBoxModel listBoxModel = JenkinsSelectBoxEnum.toListBoxModel(jenkinsSelectBoxEnums);
 
-        assertEquals(changeBuildStatusTos.length, listBoxModel.size());
+        assertEquals(jenkinsSelectBoxEnums.length, listBoxModel.size());
 
         for (int i = 0; i < listBoxModel.size(); i++) {
-            assertEquals(changeBuildStatusTos[i].getDisplayName(), listBoxModel.get(i).name, "Name did not match at index:" + i);
-            assertEquals(changeBuildStatusTos[i].getResult().toString(), listBoxModel.get(i).value, "Value did not match at index:" + i);
+            assertEquals(jenkinsSelectBoxEnums[i].getDisplayName(), listBoxModel.get(i).name, "Name did not match at index:" + i);
+            assertEquals(jenkinsSelectBoxEnums[i].name(), listBoxModel.get(i).value, "Value did not match at index:" + i);
         }
     }
 }
