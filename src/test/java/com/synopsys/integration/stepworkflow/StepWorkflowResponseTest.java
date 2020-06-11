@@ -1,14 +1,11 @@
 package com.synopsys.integration.stepworkflow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.times;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.synopsys.integration.function.ThrowingConsumer;
-import com.synopsys.integration.function.ThrowingFunction;
 
 public class StepWorkflowResponseTest {
 
@@ -20,7 +17,7 @@ public class StepWorkflowResponseTest {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(true, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
-        assertEquals(true, stepWorkflowResponse.wasSuccessful());
+        assertTrue(stepWorkflowResponse.wasSuccessful());
         assertEquals(data, stepWorkflowResponse.getData());
         assertEquals(data, stepWorkflowResponse.getDataOrThrowException());
         assertEquals(exception, stepWorkflowResponse.getException());
@@ -31,36 +28,34 @@ public class StepWorkflowResponseTest {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(false, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
-        assertEquals(false, stepWorkflowResponse.wasSuccessful());
+        assertFalse(stepWorkflowResponse.wasSuccessful());
         assertEquals(data, stepWorkflowResponse.getData());
+        assertThrows(RuntimeException.class, stepWorkflowResponse::getDataOrThrowException);
         assertEquals(exception, stepWorkflowResponse.getException());
-        assertThrows(RuntimeException.class, () -> { stepWorkflowResponse.getDataOrThrowException(); });
     }
 
     @Test
     public void testStepWorkflowResponseHandleResponse() throws Throwable {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(true, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
-        ThrowingFunction throwingFunctionImp = new ThrowingFunctionImp();
 
-        assertEquals(data, stepWorkflowResponse.handleResponse(throwingFunctionImp));
+        assertEquals(data, stepWorkflowResponse.handleResponse(StepWorkflowResponse::getData));
     }
 
     @Test
     public void testStepWorkflowResponseConsumeResponse() throws Throwable {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(true, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
-        ThrowingConsumer throwingConsumerMock = Mockito.mock(ThrowingConsumer.class);
-        stepWorkflowResponse.consumeResponse(throwingConsumerMock);
 
-        Mockito.verify(throwingConsumerMock, times(1)).accept(stepWorkflowResponse);
+        stepWorkflowResponse.consumeResponse(this::throwingConsumerValidation);
     }
 
-    public class ThrowingFunctionImp implements ThrowingFunction<StepWorkflowResponse, String, Exception> {
-
-        @Override
-        public String apply(StepWorkflowResponse stepWorkflowResponse) throws Exception {
-            return (String) stepWorkflowResponse.getData();
-        }
+    private void throwingConsumerValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Exception {
+        System.out.println("In method");
+        assertTrue(stepWorkflowResponse.wasSuccessful());
+        assertEquals(data, stepWorkflowResponse.getData());
+        assertEquals(data, stepWorkflowResponse.getDataOrThrowException());
+        assertEquals(exception, stepWorkflowResponse.getException());
     }
+
 }
