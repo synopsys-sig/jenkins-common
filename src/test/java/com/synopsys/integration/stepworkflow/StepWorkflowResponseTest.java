@@ -17,10 +17,7 @@ public class StepWorkflowResponseTest {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(true, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
-        assertTrue(stepWorkflowResponse.wasSuccessful());
-        assertEquals(data, stepWorkflowResponse.getData());
-        assertEquals(data, stepWorkflowResponse.getDataOrThrowException());
-        assertEquals(exception, stepWorkflowResponse.getException());
+        stepWorkflowResponseValidation(stepWorkflowResponse);
     }
 
     @Test
@@ -47,10 +44,10 @@ public class StepWorkflowResponseTest {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(true, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
-        stepWorkflowResponse.consumeResponse(this::throwingConsumerValidation);
+        stepWorkflowResponse.consumeResponse(this::stepWorkflowResponseValidation);
     }
 
-    private void throwingConsumerValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Exception {
+    private void stepWorkflowResponseValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Exception {
         assertTrue(stepWorkflowResponse.wasSuccessful());
         assertEquals(data, stepWorkflowResponse.getData());
         assertEquals(data, stepWorkflowResponse.getDataOrThrowException());
