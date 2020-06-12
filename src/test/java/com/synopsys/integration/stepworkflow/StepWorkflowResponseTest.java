@@ -51,7 +51,6 @@ public class StepWorkflowResponseTest {
     }
 
     private void throwingConsumerValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Exception {
-        System.out.println("In method");
         assertTrue(stepWorkflowResponse.wasSuccessful());
         assertEquals(data, stepWorkflowResponse.getData());
         assertEquals(data, stepWorkflowResponse.getDataOrThrowException());
