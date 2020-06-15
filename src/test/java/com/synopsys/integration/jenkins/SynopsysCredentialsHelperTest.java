@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
@@ -24,12 +23,8 @@ public class SynopsysCredentialsHelperTest {
 
     private final String maskedPassword = "************************";
 
-    private static Stream<Arguments> invalidCredentialIds() {
-        return Stream.of(
-            Arguments.of(""),
-            Arguments.of(" "),
-            Arguments.of("  ")
-        );
+    private static Stream<String> invalidCredentialIds() {
+        return Stream.of("", " ", "  ", null);
     }
 
     @Test
@@ -69,18 +64,6 @@ public class SynopsysCredentialsHelperTest {
     }
 
     @Test
-    public void testSynopsysCredentialsHelperGetByIdNullUser() {
-        Jenkins jenkins = Mockito.mock(Jenkins.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkins);
-
-        com.synopsys.integration.rest.credentials.Credentials credentials = synopsysCredentialsHelper.getIntegrationCredentialsById(null);
-        assertEquals(Optional.empty(), credentials.getUsername());
-        assertEquals(Optional.empty(), credentials.getPassword());
-        assertTrue(credentials.isBlank());
-        assertEquals(maskedPassword, credentials.getMaskedPassword());
-    }
-
-    @Test
     public void testSynopsysCredentialsHelperGetAPITokenValidJenkinsUser() {
         String credentialsId = "synopsys/blackduck";
         String apiTokenText = StringUtils.upperCase(credentialsId);
@@ -105,15 +88,6 @@ public class SynopsysCredentialsHelperTest {
         SynopsysCredentialsHelper spiedSynopsysCredentialsHelper = Mockito.spy(synopsysCredentialsHelper);
 
         assertEquals(Optional.empty(), spiedSynopsysCredentialsHelper.getApiTokenByCredentialsId(credentialsId));
-    }
-
-    @Test
-    public void testSynopsysCredentialsHelperGetAPITokenNullUser() {
-        Jenkins jenkins = Mockito.mock(Jenkins.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkins);
-        SynopsysCredentialsHelper spiedSynopsysCredentialsHelper = Mockito.spy(synopsysCredentialsHelper);
-
-        assertEquals(Optional.empty(), spiedSynopsysCredentialsHelper.getApiTokenByCredentialsId(null));
     }
 
 }
