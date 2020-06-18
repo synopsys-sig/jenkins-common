@@ -40,7 +40,9 @@ dependencies {
     // --rotte DEC 2019
     implementation 'org.jenkins-ci.main:jenkins-core:2.60.1'
     implementation 'org.jenkins-ci.plugins:credentials:2.1.10@jar'
+    implementation 'org.jenkins-ci.plugins:credentials:2.1.10'
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.0@jar'
+    implementation 'org.jenkins-ci.plugins:plain-credentials:1.0'
 }
 
 sourceSets {
