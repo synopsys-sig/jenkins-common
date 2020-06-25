@@ -12,8 +12,10 @@ public class SubStepTest {
     private static final Integer testData = 1;
     private static final String exceptionMessage1 = "Exception #1";
     private static final String exceptionMessage2 = "Exception #2";
+    private static final String exceptionMessage3 = "Exception #3";
     private static final IntegrationException exception = new IntegrationException(exceptionMessage1);
     private static final IntegrationException implementationException = new IntegrationException(exceptionMessage2);
+    private static final InterruptedException interruptedException = new InterruptedException(exceptionMessage3);
     private static final SubStepResponse<Integer> successfulPreviousResponse = new SubStepResponse<>(true, testData, null);
     private static final SubStepResponse<Integer> successfulPreviousResponseNoData = new SubStepResponse<>(true, null, null);
     private static final SubStepResponse<Integer> failedPreviousResponse = new SubStepResponse<>(false, testData, exception);
@@ -189,6 +191,21 @@ public class SubStepTest {
         assertEquals(implementationException, subStepResponse.getException());
     }
 
+    @Test
+    public void testInterruptedException() {
+        SubStep<Object, Object> subStep = SubStep.ofExecutor(this::executorInterruptedException);
+
+        assertFalse(Thread.currentThread().isInterrupted());
+
+        SubStepResponse<Object> subStepResponse = subStep.run(successfulPreviousResponse);
+
+        assertTrue(Thread.currentThread().isInterrupted());
+        assertFalse(subStepResponse.isSuccess());
+        assertFalse(subStepResponse.hasData());
+        assertTrue(subStepResponse.hasException());
+        assertEquals(interruptedException, subStepResponse.getException());
+    }
+
     private Integer successfulFunction(Object object) {
         return testData;
     }
@@ -219,6 +236,10 @@ public class SubStepTest {
 
     private void unsuccessfulExecutor() throws IntegrationException {
         throw implementationException;
+    }
+
+    private void executorInterruptedException() throws InterruptedException {
+        throw interruptedException;
     }
 
 }
