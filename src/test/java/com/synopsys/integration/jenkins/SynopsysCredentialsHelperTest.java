@@ -44,8 +44,8 @@ public class SynopsysCredentialsHelperTest {
         Mockito.doReturn(credentialsPassWord).when(secret).getPlainText();
 
         com.synopsys.integration.rest.credentials.Credentials credentials = spiedSynopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
-        assertEquals(credentialsUserName, credentials.getUsername().get());
-        assertEquals(credentialsPassWord, credentials.getPassword().get());
+        assertEquals(credentialsUserName, credentials.getUsername().orElse(null));
+        assertEquals(credentialsPassWord, credentials.getPassword().orElse(null));
         assertFalse(credentials.isBlank());
         assertEquals(maskedPassword, credentials.getMaskedPassword());
     }
@@ -77,7 +77,7 @@ public class SynopsysCredentialsHelperTest {
         Mockito.doReturn(secret).when(stringCredentialsImpl).getSecret();
         Mockito.doReturn(apiTokenText).when(secret).getPlainText();
 
-        assertEquals(apiTokenText, spiedSynopsysCredentialsHelper.getApiTokenByCredentialsId(credentialsId).get());
+        assertEquals(apiTokenText, spiedSynopsysCredentialsHelper.getApiTokenByCredentialsId(credentialsId).orElse(null));
     }
 
     @ParameterizedTest
