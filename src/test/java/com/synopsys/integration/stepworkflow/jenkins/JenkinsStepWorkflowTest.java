@@ -51,7 +51,7 @@ public class JenkinsStepWorkflowTest {
 
     @Test
     public void testCreatePhoneHomeRequestBodyNullJenkins() {
-        Mockito.when(jenkinsVersionHelperMock.getJenkinsVersion()).thenReturn(Optional.ofNullable(null));
+        Mockito.when(jenkinsVersionHelperMock.getJenkinsVersion()).thenReturn(Optional.empty());
         PhoneHomeRequestBody phoneHomeRequestBody = jenkinsStepWorkflow.addJenkinsMetadataAndBuildPhoneHomeRequest(phoneHomeRequestBodyBuilder);
 
         assertEquals(phoneHomeRequestBodyBuilder.getCustomerId(), phoneHomeRequestBody.getCustomerId());

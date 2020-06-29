@@ -33,7 +33,7 @@ public class JenkinsVersionHelperTest {
 
         Optional<String> actualPluginVersion = jenkinsVersionHelper.getPluginVersion(pluginName);
 
-        assertEquals(expectedPluginVersion, actualPluginVersion.get());
+        assertEquals(expectedPluginVersion, actualPluginVersion.orElse(null));
         assertTrue(actualPluginVersion.isPresent());
     }
 
@@ -44,5 +44,5 @@ public class JenkinsVersionHelperTest {
 
         assertFalse(actualPluginVersion.isPresent());
     }
-    
+
 }

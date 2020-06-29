@@ -13,12 +13,12 @@ public class SubStepTest {
     private static final String exceptionMessage1 = "Exception #1";
     private static final String exceptionMessage2 = "Exception #2";
     private static final String exceptionMessage3 = "Exception #3";
-    private static final IntegrationException exception = new IntegrationException(exceptionMessage1);
-    private static final IntegrationException implementationException = new IntegrationException(exceptionMessage2);
+    private static final IntegrationException integrationException1 = new IntegrationException(exceptionMessage1);
+    private static final IntegrationException integrationException2 = new IntegrationException(exceptionMessage2);
     private static final InterruptedException interruptedException = new InterruptedException(exceptionMessage3);
     private static final SubStepResponse<Integer> successfulPreviousResponse = new SubStepResponse<>(true, testData, null);
     private static final SubStepResponse<Integer> successfulPreviousResponseNoData = new SubStepResponse<>(true, null, null);
-    private static final SubStepResponse<Integer> failedPreviousResponse = new SubStepResponse<>(false, testData, exception);
+    private static final SubStepResponse<Integer> failedPreviousResponse = new SubStepResponse<>(false, testData, integrationException1);
 
     @Test
     public void testFunctionSuccessPreviousResponse() {
@@ -49,7 +49,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(exception, subStepResponse.getException());
+        assertEquals(integrationException1, subStepResponse.getException());
     }
 
     @Test
@@ -60,7 +60,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(implementationException, subStepResponse.getException());
+        assertEquals(integrationException2, subStepResponse.getException());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(exception, subStepResponse.getException());
+        assertEquals(integrationException1, subStepResponse.getException());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(implementationException, subStepResponse.getException());
+        assertEquals(integrationException2, subStepResponse.getException());
     }
 
     @Test
@@ -135,7 +135,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(exception, subStepResponse.getException());
+        assertEquals(integrationException1, subStepResponse.getException());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(implementationException, subStepResponse.getException());
+        assertEquals(integrationException2, subStepResponse.getException());
     }
 
     @Test
@@ -177,7 +177,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(exception, subStepResponse.getException());
+        assertEquals(integrationException1, subStepResponse.getException());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class SubStepTest {
         assertFalse(subStepResponse.isSuccess());
         assertFalse(subStepResponse.hasData());
         assertTrue(subStepResponse.hasException());
-        assertEquals(implementationException, subStepResponse.getException());
+        assertEquals(integrationException2, subStepResponse.getException());
     }
 
     @Test
@@ -211,7 +211,7 @@ public class SubStepTest {
     }
 
     private Integer unsuccessfulFunction(Object object) throws IntegrationException {
-        throw implementationException;
+        throw integrationException2;
     }
 
     private void successfulConsumer(Integer integer) {
@@ -219,7 +219,7 @@ public class SubStepTest {
     }
 
     private void unsuccessfulConsumer(Object object) throws IntegrationException {
-        throw implementationException;
+        throw integrationException2;
     }
 
     private Integer successfulSupplier() {
@@ -227,7 +227,7 @@ public class SubStepTest {
     }
 
     private Integer unsuccessfulSupplier() throws IntegrationException {
-        throw implementationException;
+        throw integrationException2;
     }
 
     private void successfulExecutor() {
@@ -235,7 +235,7 @@ public class SubStepTest {
     }
 
     private void unsuccessfulExecutor() throws IntegrationException {
-        throw implementationException;
+        throw integrationException2;
     }
 
     private void executorInterruptedException() throws InterruptedException {

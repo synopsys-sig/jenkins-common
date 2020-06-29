@@ -21,7 +21,7 @@ public class StepWorkflowResponseTest {
     }
 
     @Test
-    public void testStepWorkflowResponseFalse() throws Throwable {
+    public void testStepWorkflowResponseFalse() {
         SubStepResponse<String> subStepResponse = new SubStepResponse<>(false, data, exception);
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
@@ -37,6 +37,8 @@ public class StepWorkflowResponseTest {
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
         assertEquals(data, stepWorkflowResponse.handleResponse(StepWorkflowResponse::getData));
+
+        stepWorkflowResponseValidation(stepWorkflowResponse);
     }
 
     @Test
@@ -45,9 +47,11 @@ public class StepWorkflowResponseTest {
         StepWorkflowResponse<String> stepWorkflowResponse = new StepWorkflowResponse<>(subStepResponse);
 
         stepWorkflowResponse.consumeResponse(this::stepWorkflowResponseValidation);
+
+        stepWorkflowResponseValidation(stepWorkflowResponse);
     }
 
-    private void stepWorkflowResponseValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Exception {
+    private void stepWorkflowResponseValidation(StepWorkflowResponse<String> stepWorkflowResponse) throws Throwable {
         assertTrue(stepWorkflowResponse.wasSuccessful());
         assertEquals(data, stepWorkflowResponse.getData());
         assertEquals(data, stepWorkflowResponse.getDataOrThrowException());

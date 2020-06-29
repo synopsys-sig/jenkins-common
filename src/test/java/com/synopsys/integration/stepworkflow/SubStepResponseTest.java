@@ -33,7 +33,7 @@ public class SubStepResponseTest {
     @Test
     // Tests calling constructor with data: True, null, null
     public void testSuccessNoData() {
-        SubStepResponse subStepResponse = SubStepResponse.SUCCESS();
+        SubStepResponse<Object> subStepResponse = SubStepResponse.SUCCESS();
 
         assertTrue(subStepResponse.isSuccess());
         assertFalse(subStepResponse.isFailure());
@@ -48,7 +48,7 @@ public class SubStepResponseTest {
     @Test
     // Tests calling constructor with data: True, valid data, null
     public void testSuccessWithData() {
-        SubStepResponse subStepResponse = SubStepResponse.SUCCESS(data);
+        SubStepResponse<String> subStepResponse = SubStepResponse.SUCCESS(data);
 
         assertTrue(subStepResponse.isSuccess());
         assertFalse(subStepResponse.isFailure());
@@ -63,8 +63,8 @@ public class SubStepResponseTest {
     @Test
     // Tests calling constructor with data: False, null, null
     public void testFailureNullException() {
-        SubStepResponse subStepResponseInput = SubStepResponse.SUCCESS(data);
-        SubStepResponse subStepResponse = SubStepResponse.FAILURE(subStepResponseInput);
+        SubStepResponse<String> subStepResponseInput = SubStepResponse.SUCCESS(data);
+        SubStepResponse<Object> subStepResponse = SubStepResponse.FAILURE(subStepResponseInput);
 
         assertFalse(subStepResponse.isSuccess());
         assertTrue(subStepResponse.isFailure());
@@ -80,7 +80,7 @@ public class SubStepResponseTest {
     // Tests calling constructor with data: False, null, valid exception
     public void testFailureValidException() {
         SubStepResponse<String> subStepResponseInput = new SubStepResponse<>(true, data, exception);
-        SubStepResponse subStepResponse = SubStepResponse.FAILURE(subStepResponseInput);
+        SubStepResponse<Object> subStepResponse = SubStepResponse.FAILURE(subStepResponseInput);
 
         assertFalse(subStepResponse.isSuccess());
         assertTrue(subStepResponse.isFailure());

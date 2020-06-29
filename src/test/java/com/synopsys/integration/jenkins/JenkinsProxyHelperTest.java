@@ -154,8 +154,8 @@ public class JenkinsProxyHelperTest {
         assertEquals(proxyHost, proxyInfo.getHost().get());
         assertEquals(proxyPort, proxyInfo.getPort());
         assertTrue(proxyInfo.getProxyCredentials().isPresent());
-        assertEquals(proxyUsername, proxyInfo.getUsername().get());
-        assertEquals(proxyPassword, proxyInfo.getPassword().get());
+        assertEquals(proxyUsername, proxyInfo.getUsername().orElse(null));
+        assertEquals(proxyPassword, proxyInfo.getPassword().orElse(null));
         assertEquals(ntlmDomain, proxyInfo.getNtlmDomain().orElse(null));
         assertEquals(ntlmWorkstation, proxyInfo.getNtlmWorkstation().orElse(StringUtils.EMPTY));
     }
