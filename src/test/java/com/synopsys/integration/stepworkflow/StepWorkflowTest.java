@@ -6,7 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.synopsys.integration.exception.IntegrationException;
 
@@ -17,26 +22,62 @@ public class StepWorkflowTest {
     public static final Integer TEST_DATA_FOUR = 4;
     public static final Integer TEST_DATA_FIVE = 5;
 
-    private static final String exceptionMessage1 = "Exception #1";
-    private static final IntegrationException exception = new IntegrationException(exceptionMessage1);
+    private static final IntegrationException integrationException = new IntegrationException("Exception #1");
 
-    private final SubStep<Object, Integer> successfulSupplierOne = SubStep.ofSupplier(this::successfulDataSupplierOne);
-    private final SubStep<Object, Integer> successfulSupplierTwo = SubStep.ofSupplier(this::successfulDataSupplierTwo);
-    private final SubStep<Object, Integer> successfulSupplierThree = SubStep.ofSupplier(this::successfulDataSupplierThree);
-    private final SubStep<Object, Integer> unsuccessfulSupplierOne = SubStep.ofSupplier(this::unsuccessfulDataSupplier);
+    private SubStep<Object, Integer> subStepSupplierOne;
+    private SubStep<Object, Integer> subStepSupplierTwo;
+    private SubStep<Object, Integer> subStepSupplierThree;
+    private SubStep<Object, Object> subStepExecutorOne;
+    private SubStep<Integer, Object> subStepFunctionOne;
+    private SubStep<Integer, Object> subStepFunctionTwo;
+    private StepWorkflow.FlowController<Object, Integer> flowControllerOne;
+    private StepWorkflow.Builder<Integer> successfulBuilderOfSupplierOne;
+    private StepWorkflow.Builder<Integer> builderThenSubStepSupplierTwo;
 
-    private final SubStep<Object, Object> successfulExecutorOne = SubStep.ofExecutor(this::successfulExecutor);
-    private final SubStep<Integer, Object> successfulFunctionOne = SubStep.ofFunction(this::successfulFunctionOne);
-    private final SubStep<Integer, Object> successfulFunctionTwo = SubStep.ofFunction(this::successfulFunctionTwo);
+    private StepWorkflow.Builder<Integer> unsuccessfulBuilderOfSupplierOne;
+    private SubStep<Object, Integer> unsuccessfulSubStepSupplierOne;
 
-    private final StepWorkflow.FlowController<Object, Integer> successfulFlowControllerOfSupplier = new StepWorkflow.FlowController<>(successfulSupplierOne);
+    private static Stream<Boolean> runConditionalWorkflowObjectToTest() {
+        return Stream.of(true, false);
+    }
 
-    private final StepWorkflow.Builder<Integer> successfulBuilderOfSupplierOne = StepWorkflow.first(successfulSupplierOne);
-    private final StepWorkflow.Builder<Integer> unsuccessfulBuilderOfSupplierOne = StepWorkflow.first(unsuccessfulSupplierOne);
+    @BeforeEach
+    public void setup() {
+        subStepSupplierOne = SubStep.ofSupplier(this::successfulDataSupplierOne);
+        subStepSupplierTwo = SubStep.ofSupplier(this::successfulDataSupplierTwo);
+        subStepSupplierThree = SubStep.ofSupplier(this::successfulDataSupplierThree);
+        subStepExecutorOne = SubStep.ofExecutor(this::successfulExecutor);
+        subStepFunctionOne = SubStep.ofFunction(this::successfulFunctionOne);
+        subStepFunctionTwo = SubStep.ofFunction(this::successfulFunctionTwo);
+
+        flowControllerOne = new StepWorkflow.FlowController<>(subStepSupplierOne);
+        assertEquals(subStepSupplierOne, flowControllerOne.step);
+        assertNull(flowControllerOne.next);
+        assertNull(flowControllerOne.getResponse());
+
+        successfulBuilderOfSupplierOne = StepWorkflow.first(subStepSupplierOne);
+        assertEquals(subStepSupplierOne, successfulBuilderOfSupplierOne.start.step);
+        assertEquals(subStepSupplierOne, successfulBuilderOfSupplierOne.end.step);
+        assertNull(successfulBuilderOfSupplierOne.start.next);
+        assertNull(successfulBuilderOfSupplierOne.end.next);
+
+        builderThenSubStepSupplierTwo = successfulBuilderOfSupplierOne.then(subStepSupplierTwo);
+        assertEquals(subStepSupplierOne, builderThenSubStepSupplierTwo.start.step);
+        assertEquals(subStepSupplierTwo, builderThenSubStepSupplierTwo.end.step);
+        assertEquals(subStepSupplierTwo, builderThenSubStepSupplierTwo.start.next.step);
+        assertNull(builderThenSubStepSupplierTwo.end.next);
+
+        unsuccessfulSubStepSupplierOne = SubStep.ofSupplier(this::unsuccessfulDataSupplier);
+        unsuccessfulBuilderOfSupplierOne = StepWorkflow.first(unsuccessfulSubStepSupplierOne);
+        assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.start.step);
+        assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.end.step);
+        assertNull(unsuccessfulBuilderOfSupplierOne.start.next);
+        assertNull(unsuccessfulBuilderOfSupplierOne.end.next);
+    }
 
     @Test
     public void testSuccessfulSingleStepDataStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(successfulSupplierOne)
+        StepWorkflowResponse<Integer> response = StepWorkflow.just(subStepSupplierOne)
                                                      .run();
 
         assertTrue(response.wasSuccessful());
@@ -46,7 +87,7 @@ public class StepWorkflowTest {
 
     @Test
     public void testSuccessfulSingleStepDatalessStepWorkflow() {
-        StepWorkflowResponse<Object> response = StepWorkflow.just(successfulExecutorOne)
+        StepWorkflowResponse<Object> response = StepWorkflow.just(subStepExecutorOne)
                                                     .run();
 
         assertTrue(response.wasSuccessful());
@@ -56,7 +97,7 @@ public class StepWorkflowTest {
 
     @Test
     public void testUnsuccessfulSingleStepStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(unsuccessfulSupplierOne)
+        StepWorkflowResponse<Integer> response = StepWorkflow.just(unsuccessfulSubStepSupplierOne)
                                                      .run();
 
         assertFalse(response.wasSuccessful());
@@ -65,270 +106,120 @@ public class StepWorkflowTest {
     }
 
     @Test
-    public void testSingleFlowControllerWithSuccessResponse() {
-        // Validate FlowController before calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertNull(successfulFlowControllerOfSupplier.next);
-        assertNull(successfulFlowControllerOfSupplier.response);
-        assertNull(successfulFlowControllerOfSupplier.getResponse());
+    public void testStepWorkflowConstructor() {
+        StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerOne.append(subStepSupplierTwo);
+        StepWorkflow<Integer> stepWorkflow = new StepWorkflow<>(flowControllerOne, appendFlowController);
 
-        // Call runStep() using SUCCESS SubStepResponse
-        successfulFlowControllerOfSupplier.runStep(SubStepResponse.SUCCESS());
-
-        // Validate FlowController after calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertNull(successfulFlowControllerOfSupplier.next);
-        assertNotNull(successfulFlowControllerOfSupplier.response);
-        assertNotNull(successfulFlowControllerOfSupplier.getResponse());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().isSuccess());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().hasData());
-        assertEquals(TEST_DATA_ONE, successfulFlowControllerOfSupplier.getResponse().getData());
-        assertFalse(successfulFlowControllerOfSupplier.getResponse().hasException());
-        assertNull(successfulFlowControllerOfSupplier.getResponse().getException());
+        assertEquals(subStepSupplierOne, stepWorkflow.start.step);
+        assertEquals(subStepSupplierOne, flowControllerOne.step);
+        assertEquals(subStepSupplierTwo, stepWorkflow.end.step);
+        assertEquals(subStepSupplierTwo, flowControllerOne.next.step);
+        assertEquals(subStepSupplierTwo, appendFlowController.step);
     }
 
     @Test
-    public void testSingleFlowControllerWithFailedResponse() {
-        // Validate FlowController before calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertNull(successfulFlowControllerOfSupplier.next);
-        assertNull(successfulFlowControllerOfSupplier.response);
-        assertNull(successfulFlowControllerOfSupplier.getResponse());
+    public void testFlowControllerAppend() {
+        StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerOne.append(subStepSupplierTwo);
 
-        // Call runStep() using FAILURE SubStepResponse
-        successfulFlowControllerOfSupplier.runStep(SubStepResponse.FAILURE(exception));
-
-        // Validate FlowController after calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertNull(successfulFlowControllerOfSupplier.next);
-        assertNotNull(successfulFlowControllerOfSupplier.response);
-        assertNotNull(successfulFlowControllerOfSupplier.getResponse());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().isFailure());
-        assertFalse(successfulFlowControllerOfSupplier.getResponse().hasData());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().hasException());
-        assertEquals(exception, successfulFlowControllerOfSupplier.getResponse().getException());
-    }
-
-    @Test
-    public void testMultipleFlowControllerSuccessResponse() {
-        // Append and validate second FlowController before calling runStep()
-        StepWorkflow.FlowController<?, Integer> appendFlowController = successfulFlowControllerOfSupplier.append(successfulSupplierTwo);
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertEquals(appendFlowController, successfulFlowControllerOfSupplier.next);
-        assertNull(successfulFlowControllerOfSupplier.response);
-        assertNull(successfulFlowControllerOfSupplier.getResponse());
-        assertEquals(successfulSupplierTwo, appendFlowController.step);
+        assertEquals(subStepSupplierOne, flowControllerOne.step);
+        assertEquals(appendFlowController, flowControllerOne.next);
+        assertNull(flowControllerOne.getResponse());
+        assertEquals(subStepSupplierTwo, appendFlowController.step);
         assertNull(appendFlowController.next);
-        assertNull(appendFlowController.response);
         assertNull(appendFlowController.getResponse());
-
-        // Call runStep() using SUCCESS SubStepResponse
-        successfulFlowControllerOfSupplier.runStep(SubStepResponse.SUCCESS());
-
-        // Validate first FlowController after calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertEquals(appendFlowController, successfulFlowControllerOfSupplier.next);
-        assertNotNull(successfulFlowControllerOfSupplier.response);
-        assertNotNull(successfulFlowControllerOfSupplier.getResponse());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().isSuccess());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().hasData());
-        assertEquals(TEST_DATA_ONE, successfulFlowControllerOfSupplier.getResponse().getData());
-        assertFalse(successfulFlowControllerOfSupplier.getResponse().hasException());
-        assertNull(successfulFlowControllerOfSupplier.getResponse().getException());
-
-        // Validate second FlowController after calling runStep()
-        assertEquals(successfulSupplierTwo, appendFlowController.step);
-        assertNull(appendFlowController.next);
-        assertNotNull(appendFlowController.response);
-        assertNotNull(appendFlowController.getResponse());
-        assertTrue(appendFlowController.getResponse().isSuccess());
-        assertTrue(appendFlowController.getResponse().hasData());
-        assertEquals(TEST_DATA_TWO, appendFlowController.getResponse().getData());
-        assertFalse(appendFlowController.getResponse().hasException());
-        assertNull(appendFlowController.getResponse().getException());
     }
 
     @Test
-    public void testMultipleFlowControllerFailedResponse() {
-        // Append and validate second FlowController before calling runStep()
-        StepWorkflow.FlowController<?, Integer> appendFlowController = successfulFlowControllerOfSupplier.append(successfulSupplierTwo);
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertEquals(appendFlowController, successfulFlowControllerOfSupplier.next);
-        assertNull(successfulFlowControllerOfSupplier.response);
-        assertNull(successfulFlowControllerOfSupplier.getResponse());
-        assertEquals(successfulSupplierTwo, appendFlowController.step);
-        assertNull(appendFlowController.next);
-        assertNull(appendFlowController.response);
-        assertNull(appendFlowController.getResponse());
+    public void testFlowControllerRunStepSuccess() {
+        flowControllerOne.runStep(SubStepResponse.SUCCESS());
+        SubStepResponse<Integer> response = flowControllerOne.getResponse();
 
-        // Call runStep() using FAILURE SubStepResponse
-        successfulFlowControllerOfSupplier.runStep(SubStepResponse.FAILURE(exception));
-
-        // Validate first FlowController after calling runStep()
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertEquals(appendFlowController, successfulFlowControllerOfSupplier.next);
-        assertNotNull(successfulFlowControllerOfSupplier.response);
-        assertNotNull(successfulFlowControllerOfSupplier.getResponse());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().isFailure());
-        assertFalse(successfulFlowControllerOfSupplier.getResponse().hasData());
-        assertTrue(successfulFlowControllerOfSupplier.getResponse().hasException());
-        assertEquals(exception, successfulFlowControllerOfSupplier.getResponse().getException());
-
-        // Validate second FlowController after calling runStep()
-        assertEquals(successfulSupplierTwo, appendFlowController.step);
-        assertNull(appendFlowController.next);
-        assertNotNull(appendFlowController.response);
-        assertNotNull(appendFlowController.getResponse());
-        assertTrue(appendFlowController.getResponse().isFailure());
-        assertFalse(appendFlowController.getResponse().hasData());
-        assertTrue(appendFlowController.getResponse().hasException());
-        assertEquals(exception, appendFlowController.getResponse().getException());
-    }
-
-    @Test
-    public void testStepWorkflowStartAndEnd() {
-        // Create and validate StepWorkflow
-        StepWorkflow.FlowController<?, Integer> appendFlowController = successfulFlowControllerOfSupplier.append(successfulSupplierTwo);
-        StepWorkflow<Integer> stepWorkflow = new StepWorkflow<>(successfulFlowControllerOfSupplier, appendFlowController);
-        assertEquals(successfulSupplierOne, stepWorkflow.start.step);
-        assertEquals(successfulSupplierOne, successfulFlowControllerOfSupplier.step);
-        assertEquals(successfulSupplierTwo, stepWorkflow.end.step);
-        assertEquals(successfulSupplierTwo, successfulFlowControllerOfSupplier.next.step);
-        assertEquals(successfulSupplierTwo, appendFlowController.step);
-
-        // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Integer> response = stepWorkflow.run();
-        assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_TWO, response.getData());
+        assertEquals(subStepSupplierOne, flowControllerOne.step);
+        assertNull(flowControllerOne.next);
+        assertNotNull(response);
+        assertTrue(response.isSuccess());
+        assertTrue(response.hasData());
+        assertEquals(TEST_DATA_ONE, response.getData());
+        assertFalse(response.hasException());
         assertNull(response.getException());
     }
 
     @Test
-    public void testBuilderFirstStepOnly() {
-        // Create and validate first() Builder
-        assertEquals(successfulSupplierOne, successfulBuilderOfSupplierOne.start.step);
-        assertEquals(successfulSupplierOne, successfulBuilderOfSupplierOne.end.step);
-        assertNull(successfulBuilderOfSupplierOne.start.next);
+    public void testFlowControllerRunStepFailure() {
+        flowControllerOne.runStep(SubStepResponse.FAILURE(integrationException));
+        SubStepResponse<Integer> response = flowControllerOne.getResponse();
 
-        // Validate return from calling build()
-        StepWorkflow<Integer> buildStepWorkflow = successfulBuilderOfSupplierOne.build();
-        assertEquals(successfulSupplierOne, buildStepWorkflow.start.step);
-        assertEquals(successfulSupplierOne, buildStepWorkflow.end.step);
+        assertEquals(subStepSupplierOne, flowControllerOne.step);
+        assertNull(flowControllerOne.next);
+        assertNotNull(response);
+        assertTrue(response.isFailure());
+        assertFalse(response.hasData());
+        assertTrue(response.hasException());
+        assertEquals(integrationException, response.getException());
+    }
 
-        // Call run() and validate return StepWorkflowResponse
+    @Test
+    public void testBuilderAndSometimes() {
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.Builder<Object> buildBuilder = andSometimesConditional.build(subStepFunctionOne);
+
+        assertEquals(subStepSupplierOne, buildBuilder.start.step);
+        assertEquals(subStepFunctionOne, buildBuilder.start.next.step);
+        assertNull(buildBuilder.start.next.next);
+        assertEquals(subStepFunctionOne, buildBuilder.end.step);
+        assertNull(buildBuilder.end.next);
+    }
+
+    @Test
+    public void testBuilderRun() {
         StepWorkflowResponse<Integer> response = successfulBuilderOfSupplierOne.run();
+
         assertTrue(response.wasSuccessful());
         assertEquals(TEST_DATA_ONE, response.getData());
         assertNull(response.getException());
     }
 
     @Test
-    public void testBuilderThenStep() {
-        // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenStepWorkflow = successfulBuilderOfSupplierOne.then(successfulSupplierTwo);
-        assertEquals(successfulSupplierOne, successfulBuilderOfSupplierOne.start.step);
-        assertEquals(successfulSupplierOne, successfulBuilderOfSupplierOne.end.step);
-        assertEquals(successfulSupplierTwo, successfulBuilderOfSupplierOne.start.next.step);
-        assertNull(successfulBuilderOfSupplierOne.end.next.next);
+    public void testConditionalConstructorAndThen() {
+        StepWorkflow.ConditionalBuilder<Integer, Integer> conditionalBuilder = new StepWorkflow.ConditionalBuilder(builderThenSubStepSupplierTwo, subStepSupplierThree);
+        StepWorkflow.ConditionalBuilder<Integer, Object> thenConditionalBuilder = conditionalBuilder.then(subStepFunctionOne);
+        StepWorkflow.Builder<Object> buildBuilder = thenConditionalBuilder.build(subStepFunctionTwo);
 
-        // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Integer> response = thenStepWorkflow.run();
-        assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_TWO, response.getData());
-        assertNull(response.getException());
+        assertEquals(subStepSupplierOne, buildBuilder.start.step);
+        assertEquals(subStepSupplierTwo, buildBuilder.start.next.step);
+        assertEquals(subStepFunctionTwo, buildBuilder.end.step);
     }
 
     @Test
-    public void testBuilderAndSometimesStep() {
-        // Create and validate andSometimes() Builder
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditionalBuilder = successfulBuilderOfSupplierOne.andSometimes(successfulSupplierTwo);
-        StepWorkflow.Builder<Object> buildStepWorkflow = andSometimesConditionalBuilder.build(successfulFunctionOne);
-        assertEquals(successfulSupplierOne, buildStepWorkflow.start.step);
-        assertEquals(successfulFunctionOne, buildStepWorkflow.start.next.step);
-        assertNull(buildStepWorkflow.start.next.next);
-        assertEquals(successfulFunctionOne, buildStepWorkflow.end.step);
-        assertNull(buildStepWorkflow.end.next);
+    public void testConditionalButOnlyIf() {
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> true);
 
-        // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Object> response = buildStepWorkflow.run();
-        assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_FOUR, response.getData());
-        assertNull(response.getException());
-    }
-
-    @Test
-    public void testConditionalButOnlyIfTrue() {
-        // Create and validate butOnlyIf() Builder
-        // butOnlyIf passed a "true" for execution
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditionalBuilder = successfulBuilderOfSupplierOne.andSometimes(successfulSupplierTwo);
-        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditionalBuilder.butOnlyIf(true, returnValue -> this.returnValue(returnValue));
-        assertEquals(successfulSupplierOne, butOnlyIfBuilder.start.step);
+        assertEquals(subStepSupplierOne, butOnlyIfBuilder.start.step);
         assertNotNull(butOnlyIfBuilder.start.next);
-
-        // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(successfulSupplierThree);
-        assertEquals(successfulSupplierOne, thenBuilder.start.step);
-        assertNotNull(thenBuilder.start.next);
-        assertEquals(successfulSupplierThree, thenBuilder.end.step);
-
-        // Run and validate build()
-        StepWorkflow<Integer> buildStepWorkflow = thenBuilder.build();
-        assertEquals(thenBuilder.start, buildStepWorkflow.start);
-        assertEquals(thenBuilder.end, buildStepWorkflow.end);
-
-        // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Integer> response = buildStepWorkflow.run();
-        assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_THREE, response.getData());
-        assertNull(response.getException());
+        assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
+        assertNull(butOnlyIfBuilder.end.next);
     }
 
     @Test
-    public void testConditionalButOnlyIfFalse() {
+    public void testRunConditionalWorkflowFailedPreviousResponse() {
         // Create and validate butOnlyIf() Builder
-        // butOnlyIf passed a "false" for execution
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditionalBuilder = successfulBuilderOfSupplierOne.andSometimes(successfulSupplierTwo);
-        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditionalBuilder.butOnlyIf(false, returnValue -> this.returnValue(returnValue));
-        assertEquals(successfulSupplierOne, butOnlyIfBuilder.start.step);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = unsuccessfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> true);
+        assertEquals(unsuccessfulSubStepSupplierOne, butOnlyIfBuilder.start.step);
         assertNotNull(butOnlyIfBuilder.start.next);
+        assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
+        assertNull(butOnlyIfBuilder.end.next);
 
         // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(successfulSupplierThree);
-        assertEquals(successfulSupplierOne, thenBuilder.start.step);
+        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierThree);
+        assertEquals(unsuccessfulSubStepSupplierOne, thenBuilder.start.step);
         assertNotNull(thenBuilder.start.next);
-        assertEquals(successfulSupplierThree, thenBuilder.end.step);
-
-        // Run and validate build()
-        StepWorkflow<Integer> buildStepWorkflow = thenBuilder.build();
-        assertEquals(thenBuilder.start, buildStepWorkflow.start);
-        assertEquals(thenBuilder.end, buildStepWorkflow.end);
-
-        // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Integer> response = buildStepWorkflow.run();
-        assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_THREE, response.getData());
-        assertNull(response.getException());
-    }
-
-    @Test
-    public void testConditionalFailedPreviousResponse() {
-        // Create and validate first() Builder using unsuccessfulDataSupplier
-        assertEquals(unsuccessfulSupplierOne, unsuccessfulBuilderOfSupplierOne.start.step);
-        assertNull(unsuccessfulBuilderOfSupplierOne.start.next);
-        assertEquals(unsuccessfulSupplierOne, unsuccessfulBuilderOfSupplierOne.end.step);
-
-        // Create and validate butOnlyIf() Builder
-        // butOnlyIf passed a "false" for execution
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditionalBuilder = unsuccessfulBuilderOfSupplierOne.andSometimes(successfulSupplierTwo);
-        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditionalBuilder.butOnlyIf(false, returnValue -> this.returnValue(returnValue));
-        assertEquals(unsuccessfulSupplierOne, butOnlyIfBuilder.start.step);
-        assertNotNull(butOnlyIfBuilder.start.next);
-
-        // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(successfulSupplierThree);
-        assertEquals(unsuccessfulSupplierOne, thenBuilder.start.step);
-        assertNotNull(thenBuilder.start.next);
-        assertEquals(successfulSupplierThree, thenBuilder.end.step);
+        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertEquals(unsuccessfulSubStepSupplierOne, thenBuilder.start.step);
+        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertNotNull(thenBuilder.start.next.step);
+        assertNull(thenBuilder.end.next);
 
         // Run and validate build()
         StepWorkflow<Integer> buildStepWorkflow = thenBuilder.build();
@@ -339,39 +230,40 @@ public class StepWorkflowTest {
         StepWorkflowResponse<Integer> response = buildStepWorkflow.run();
         assertFalse(response.wasSuccessful());
         assertNull(response.getData());
-        assertEquals(exception, response.getException());
+        assertEquals(integrationException, response.getException());
     }
 
-    @Test
-    public void testConditionalConstructorAndThen() {
-        // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = successfulBuilderOfSupplierOne.then(successfulSupplierTwo);
-        assertEquals(successfulSupplierOne, thenBuilder.start.step);
-        assertNotNull(thenBuilder.start.next);
-        assertEquals(successfulSupplierTwo, thenBuilder.end.step);
+    @ParameterizedTest
+    @MethodSource("runConditionalWorkflowObjectToTest")
+    public void testRunConditionalWorkflowSuccessPreviousResponse(Boolean predicateTest) {
+        // Create and validate butOnlyIf() Builder
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> predicateTest);
+        assertEquals(subStepSupplierOne, butOnlyIfBuilder.start.step);
+        assertNotNull(butOnlyIfBuilder.start.next);
+        assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
+        assertNull(butOnlyIfBuilder.end.next);
 
-        // Create and validate build() Builder using conditionalBuilderOne.then() and ConditionalBuilder constructor
-        StepWorkflow.ConditionalBuilder<Integer, Integer> conditionalBuilder = new StepWorkflow.ConditionalBuilder(thenBuilder, successfulSupplierThree);
-        StepWorkflow.ConditionalBuilder<Integer, Object> thenConditionalBuilder = conditionalBuilder.then(successfulFunctionOne);
-        StepWorkflow.Builder<Object> buildBuilder = thenConditionalBuilder.build(successfulFunctionTwo);
-        assertEquals(successfulSupplierOne, buildBuilder.start.step);
-        assertEquals(successfulSupplierTwo, buildBuilder.start.next.step);
-        assertEquals(successfulFunctionTwo, buildBuilder.end.step);
+        // Create and validate then() Builder
+        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierThree);
+        assertEquals(subStepSupplierOne, thenBuilder.start.step);
+        assertNotNull(thenBuilder.start.next);
+        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertEquals(subStepSupplierOne, thenBuilder.start.step);
+        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertNotNull(thenBuilder.start.next.step);
+        assertNull(thenBuilder.end.next);
 
         // Run and validate build()
-        StepWorkflow<Object> buildStepWorkflow = buildBuilder.build();
-        assertEquals(buildBuilder.start, buildStepWorkflow.start);
-        assertEquals(buildBuilder.end, buildStepWorkflow.end);
+        StepWorkflow<Integer> buildStepWorkflow = thenBuilder.build();
+        assertEquals(thenBuilder.start, buildStepWorkflow.start);
+        assertEquals(thenBuilder.end, buildStepWorkflow.end);
 
         // Call run() and validate return StepWorkflowResponse
-        StepWorkflowResponse<Object> response = buildStepWorkflow.run();
+        StepWorkflowResponse<Integer> response = buildStepWorkflow.run();
         assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_FIVE, response.getData());
+        assertEquals(TEST_DATA_THREE, response.getData());
         assertNull(response.getException());
-    }
-
-    private boolean returnValue(boolean returnValue) {
-        return returnValue;
     }
 
     private void successfulExecutor() {
@@ -399,7 +291,7 @@ public class StepWorkflowTest {
     }
 
     private Integer unsuccessfulDataSupplier() throws IntegrationException {
-        throw exception;
+        throw integrationException;
     }
 
 }
