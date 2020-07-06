@@ -22,7 +22,6 @@
  */
 package com.synopsys.integration.jenkins;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,14 +30,11 @@ import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import com.cloudbees.plugins.credentials.matchers.IdMatcher;
 import com.synopsys.integration.rest.credentials.CredentialsBuilder;
 
-import hudson.security.ACL;
 import hudson.util.Secret;
-import jenkins.model.Jenkins;
 
 public class SynopsysCredentialsHelper {
     public static final Class<StringCredentialsImpl> API_TOKEN_CREDENTIALS_CLASS = StringCredentialsImpl.class;
@@ -46,13 +42,13 @@ public class SynopsysCredentialsHelper {
     public static final Class<UsernamePasswordCredentialsImpl> USERNAME_PASSWORD_CREDENTIALS_CLASS = UsernamePasswordCredentialsImpl.class;
     public static final CredentialsMatcher API_TOKEN_OR_USERNAME_PASSWORD_CREDENTIALS = CredentialsMatchers
                                                                                             .either(CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS), CredentialsMatchers.instanceOf(USERNAME_PASSWORD_CREDENTIALS_CLASS));
-    private final Jenkins jenkins;
+    private final JenkinsWrapper jenkinsWrapper;
 
-    public SynopsysCredentialsHelper(final Jenkins jenkins) {
-        this.jenkins = jenkins;
+    public SynopsysCredentialsHelper(JenkinsWrapper jenkinsWrapper) {
+        this.jenkinsWrapper = jenkinsWrapper;
     }
 
-    public com.synopsys.integration.rest.credentials.Credentials getIntegrationCredentialsById(final String credentialsId) {
+    public com.synopsys.integration.rest.credentials.Credentials getIntegrationCredentialsById(String credentialsId) {
         Optional<UsernamePasswordCredentialsImpl> credentials = getUsernamePasswordCredentialsById(credentialsId);
 
         CredentialsBuilder credentialsBuilder = com.synopsys.integration.rest.credentials.Credentials.newBuilder();
@@ -67,29 +63,27 @@ public class SynopsysCredentialsHelper {
         return credentialsBuilder.build();
     }
 
-    public Optional<String> getApiTokenByCredentialsId(final String credentialsId) {
+    public Optional<String> getApiTokenByCredentialsId(String credentialsId) {
         return getApiTokenCredentialsById(credentialsId)
                    .map(StringCredentialsImpl::getSecret)
                    .map(Secret::getPlainText);
     }
 
-    public Optional<UsernamePasswordCredentialsImpl> getUsernamePasswordCredentialsById(final String credentialsId) {
+    public Optional<UsernamePasswordCredentialsImpl> getUsernamePasswordCredentialsById(String credentialsId) {
         return getCredentialsById(USERNAME_PASSWORD_CREDENTIALS_CLASS, credentialsId);
     }
 
-    public Optional<StringCredentialsImpl> getApiTokenCredentialsById(final String credentialsId) {
+    public Optional<StringCredentialsImpl> getApiTokenCredentialsById(String credentialsId) {
         return getCredentialsById(API_TOKEN_CREDENTIALS_CLASS, credentialsId);
     }
 
-    public <T extends Credentials> Optional<T> getCredentialsById(final Class<T> credentialsType, final String credentialsId) {
+    public <T extends Credentials> Optional<T> getCredentialsById(Class<T> credentialsType, String credentialsId) {
         if (StringUtils.isBlank(credentialsId)) {
             return Optional.empty();
         }
 
-        final IdMatcher idMatcher = new IdMatcher(credentialsId);
+        IdMatcher idMatcher = new IdMatcher(credentialsId);
 
-        return CredentialsProvider.lookupCredentials(credentialsType, jenkins, ACL.SYSTEM, Collections.emptyList()).stream()
-                   .filter(idMatcher::matches)
-                   .findAny();
+        return jenkinsWrapper.getCredentialsById(idMatcher, credentialsType);
     }
 }

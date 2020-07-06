@@ -37,7 +37,6 @@ import com.synopsys.integration.rest.proxy.ProxyInfo;
 import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
 
 import hudson.ProxyConfiguration;
-import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelper {
     private static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
@@ -74,8 +73,8 @@ public class JenkinsProxyHelper {
         this.isBlank = true;
     }
 
-    public static JenkinsProxyHelper fromJenkins(Jenkins jenkins) {
-        ProxyConfiguration proxyConfig = Optional.ofNullable(jenkins)
+    public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
+        ProxyConfiguration proxyConfig = Optional.ofNullable(jenkinsWrapper.getJenkins()).orElse(null)
                                              .map(instance -> instance.proxy)
                                              .orElse(null);
         if (proxyConfig == null) {

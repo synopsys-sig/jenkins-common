@@ -1,0 +1,69 @@
+/**
+ * jenkins-common
+ *
+ * Copyright (c) 2020 Synopsys, Inc.
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package com.synopsys.integration.jenkins;
+
+import static hudson.model.Items.XSTREAM;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import com.cloudbees.plugins.credentials.Credentials;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.matchers.IdMatcher;
+
+import hudson.security.ACL;
+import hudson.util.VersionNumber;
+import jenkins.model.Jenkins;
+
+public class JenkinsWrapper {
+
+    private Jenkins jenkins;
+
+    public JenkinsWrapper(Jenkins jenkins) {
+        this.jenkins = jenkins;
+    }
+
+    public static JenkinsWrapper GET_JENKINS_IF_MASTER() {
+        return new JenkinsWrapper(Jenkins.getInstanceOrNull());
+    }
+
+    public Optional<Jenkins> getJenkins() {
+        return Optional.ofNullable(jenkins);
+    }
+
+    public Optional<VersionNumber> getVersion() {
+        return Optional.ofNullable(jenkins.getVersion());
+    }
+
+    public <T extends Credentials> Optional<T> getCredentialsById(IdMatcher idMatcher, Class<T> credentialsType) {
+        return CredentialsProvider.lookupCredentials(credentialsType, jenkins, ACL.SYSTEM, Collections.emptyList()).stream()
+                   .filter(idMatcher::matches)
+                   .findAny();
+    }
+
+    public void migrateFieldFrom(String oldName, Class clazz, String newName) {
+        XSTREAM.aliasField(oldName, clazz, newName);
+        XSTREAM.aliasField(newName, clazz, newName);
+    }
+
+}
