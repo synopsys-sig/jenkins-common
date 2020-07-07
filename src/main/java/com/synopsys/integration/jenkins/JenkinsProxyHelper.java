@@ -73,7 +73,7 @@ public class JenkinsProxyHelper {
     }
 
     public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
-        ProxyConfiguration proxyConfig = jenkinsWrapper.getProxyConfiguration();
+        ProxyConfiguration proxyConfig = jenkinsWrapper.getProxyConfiguration().orElse(null);
 
         if (proxyConfig == null) {
             return NO_PROXY;

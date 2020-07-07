@@ -62,10 +62,9 @@ public class JenkinsWrapper {
                    .findAny();
     }
 
-    public ProxyConfiguration getProxyConfiguration() {
+    public Optional<ProxyConfiguration> getProxyConfiguration() {
         return Optional.ofNullable(jenkins)
-                   .map(instance -> instance.proxy)
-                   .orElse(null);
+                   .map(instance -> instance.proxy);
     }
 
     public void migrateFieldFrom(String oldName, Class clazz, String newName) {
