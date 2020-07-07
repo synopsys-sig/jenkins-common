@@ -25,7 +25,6 @@ package com.synopsys.integration.jenkins;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,7 +73,7 @@ public class JenkinsProxyHelper {
     }
 
     public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
-        ProxyConfiguration proxyConfig = Optional.ofNullable(jenkinsWrapper.getJenkins()).orElse(null)
+        ProxyConfiguration proxyConfig = jenkinsWrapper.getJenkins()
                                              .map(instance -> instance.proxy)
                                              .orElse(null);
         if (proxyConfig == null) {
