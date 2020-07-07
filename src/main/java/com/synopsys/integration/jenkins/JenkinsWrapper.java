@@ -53,7 +53,7 @@ public class JenkinsWrapper {
     }
 
     public Optional<VersionNumber> getVersion() {
-        return Optional.ofNullable(jenkins.getVersion());
+        return Optional.ofNullable(Jenkins.getVersion());
     }
 
     public <T extends Credentials> Optional<T> getCredentialsById(IdMatcher idMatcher, Class<T> credentialsType) {
