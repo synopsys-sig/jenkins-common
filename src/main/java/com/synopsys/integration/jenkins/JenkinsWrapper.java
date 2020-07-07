@@ -31,6 +31,7 @@ import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.matchers.IdMatcher;
 
+import hudson.ProxyConfiguration;
 import hudson.security.ACL;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
@@ -59,6 +60,12 @@ public class JenkinsWrapper {
         return CredentialsProvider.lookupCredentials(credentialsType, jenkins, ACL.SYSTEM, Collections.emptyList()).stream()
                    .filter(idMatcher::matches)
                    .findAny();
+    }
+
+    public ProxyConfiguration getProxyConfiguration() {
+        return Optional.ofNullable(jenkins)
+                   .map(instance -> instance.proxy)
+                   .orElse(null);
     }
 
     public void migrateFieldFrom(String oldName, Class clazz, String newName) {
