@@ -43,7 +43,7 @@ public class JenkinsWrapper {
         this.jenkins = jenkins;
     }
 
-    public static JenkinsWrapper GET_JENKINS_IF_MASTER() {
+    public static JenkinsWrapper initializeFromJenkinsJVM() {
         return new JenkinsWrapper(Jenkins.getInstanceOrNull());
     }
 

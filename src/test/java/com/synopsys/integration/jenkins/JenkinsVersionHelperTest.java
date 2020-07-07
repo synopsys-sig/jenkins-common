@@ -41,7 +41,7 @@ public class JenkinsVersionHelperTest {
 
     @Test
     public void testGetPluginVersionNull() {
-        JenkinsWrapper jenkinsWrapper = JenkinsWrapper.GET_JENKINS_IF_MASTER();
+        JenkinsWrapper jenkinsWrapper = JenkinsWrapper.initializeFromJenkinsJVM();
         JenkinsVersionHelper jenkinsVersionHelper = new JenkinsVersionHelper(jenkinsWrapper);
         Optional<String> actualPluginVersion = jenkinsVersionHelper.getPluginVersion(pluginName);
 

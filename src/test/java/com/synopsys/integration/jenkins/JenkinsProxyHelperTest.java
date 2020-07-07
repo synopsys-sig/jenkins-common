@@ -84,7 +84,7 @@ public class JenkinsProxyHelperTest {
 
     @Test
     public void testFromJenkinsNullJenkins() {
-        JenkinsWrapper jenkinsWrapper = JenkinsWrapper.GET_JENKINS_IF_MASTER();
+        JenkinsWrapper jenkinsWrapper = JenkinsWrapper.initializeFromJenkinsJVM();
         ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo("www.null-jenkins.com");
         noProxyInfoValidation(proxyInfo);
     }
