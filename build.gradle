@@ -3,15 +3,11 @@ buildscript {
     apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
 }
 
-plugins { id 'groovy' }
-
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
 project.ext.javaUseAutoModuleName = 'true'
 
 version = '0.2.2-SNAPSHOT'
 description = 'Library for common Synopsys Jenkins plugin logic'
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
 
 apply plugin: 'com.synopsys.integration.library'
 
@@ -38,14 +34,9 @@ dependencies {
     // or Jenkins plugin versions in Jenkins plugins that depend on this library.
     // Jenkins plugins that depend on this library should therefore version those dependencies compatibly with the versions below:
     // --rotte DEC 2019
-    implementation 'org.jenkins-ci.main:jenkins-core:2.60.1'
+    implementation 'org.jenkins-ci.main:jenkins-core:2.150.3'
     implementation 'org.jenkins-ci.plugins:credentials:2.1.10@jar'
     implementation 'org.jenkins-ci.plugins:credentials:2.1.10'
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.0@jar'
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.0'
-}
-
-sourceSets {
-    test.compileClasspath += configurations.compileOnly
-    test.runtimeClasspath += configurations.compileOnly
 }
