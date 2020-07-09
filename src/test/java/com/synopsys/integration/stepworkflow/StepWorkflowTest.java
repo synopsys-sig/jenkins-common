@@ -6,12 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.synopsys.integration.exception.IntegrationException;
 
@@ -37,18 +35,14 @@ public class StepWorkflowTest {
     private StepWorkflow.Builder<Integer> unsuccessfulBuilderOfSupplierOne;
     private SubStep<Object, Integer> unsuccessfulSubStepSupplierOne;
 
-    private static Stream<Boolean> runConditionalWorkflowObjectToTest() {
-        return Stream.of(true, false);
-    }
-
     @BeforeEach
     public void setup() {
-        subStepSupplierOne = SubStep.ofSupplier(this::successfulDataSupplierOne);
-        subStepSupplierTwo = SubStep.ofSupplier(this::successfulDataSupplierTwo);
-        subStepSupplierThree = SubStep.ofSupplier(this::successfulDataSupplierThree);
-        subStepExecutorOne = SubStep.ofExecutor(this::successfulExecutor);
-        subStepFunctionOne = SubStep.ofFunction(this::successfulFunctionOne);
-        subStepFunctionTwo = SubStep.ofFunction(this::successfulFunctionTwo);
+        subStepSupplierOne = SubStep.ofSupplier(() -> TEST_DATA_ONE);
+        subStepSupplierTwo = SubStep.ofSupplier(() -> TEST_DATA_TWO);
+        subStepSupplierThree = SubStep.ofSupplier(() -> TEST_DATA_THREE);
+        subStepExecutorOne = SubStep.ofExecutor(() -> {});
+        subStepFunctionOne = SubStep.ofFunction((Integer integer) -> TEST_DATA_FOUR);
+        subStepFunctionTwo = SubStep.ofFunction((Integer integer) -> TEST_DATA_FIVE);
 
         flowControllerOne = new StepWorkflow.FlowController<>(subStepSupplierOne);
         assertEquals(subStepSupplierOne, flowControllerOne.step);
@@ -67,7 +61,7 @@ public class StepWorkflowTest {
         assertEquals(subStepSupplierTwo, builderThenSubStepSupplierTwo.start.next.step);
         assertNull(builderThenSubStepSupplierTwo.end.next);
 
-        unsuccessfulSubStepSupplierOne = SubStep.ofSupplier(this::unsuccessfulDataSupplier);
+        unsuccessfulSubStepSupplierOne = SubStep.ofSupplier(() -> {throw integrationException;});
         unsuccessfulBuilderOfSupplierOne = StepWorkflow.first(unsuccessfulSubStepSupplierOne);
         assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.start.step);
         assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.end.step);
@@ -106,25 +100,14 @@ public class StepWorkflowTest {
     }
 
     @Test
-    public void testStepWorkflowConstructor() {
-        StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerOne.append(subStepSupplierTwo);
-        StepWorkflow<Integer> stepWorkflow = new StepWorkflow<>(flowControllerOne, appendFlowController);
-
-        assertEquals(subStepSupplierOne, stepWorkflow.start.step);
-        assertEquals(subStepSupplierOne, flowControllerOne.step);
-        assertEquals(subStepSupplierTwo, stepWorkflow.end.step);
-        assertEquals(subStepSupplierTwo, flowControllerOne.next.step);
-        assertEquals(subStepSupplierTwo, appendFlowController.step);
-    }
-
-    @Test
-    public void testFlowControllerAppend() {
+    public void testFlowControllerAppendAndConstructor() {
         StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerOne.append(subStepSupplierTwo);
 
         assertEquals(subStepSupplierOne, flowControllerOne.step);
         assertEquals(appendFlowController, flowControllerOne.next);
         assertNull(flowControllerOne.getResponse());
         assertEquals(subStepSupplierTwo, appendFlowController.step);
+        assertEquals(subStepSupplierTwo, flowControllerOne.next.step);
         assertNull(appendFlowController.next);
         assertNull(appendFlowController.getResponse());
     }
@@ -134,6 +117,7 @@ public class StepWorkflowTest {
         flowControllerOne.runStep(SubStepResponse.SUCCESS());
         SubStepResponse<Integer> response = flowControllerOne.getResponse();
 
+        // Ensure that response is the only field that was changed as a result of runStep() being called
         assertEquals(subStepSupplierOne, flowControllerOne.step);
         assertNull(flowControllerOne.next);
         assertNotNull(response);
@@ -149,6 +133,7 @@ public class StepWorkflowTest {
         flowControllerOne.runStep(SubStepResponse.FAILURE(integrationException));
         SubStepResponse<Integer> response = flowControllerOne.getResponse();
 
+        // Ensure that response is the only field that was changed as a result of runStep() being called
         assertEquals(subStepSupplierOne, flowControllerOne.step);
         assertNull(flowControllerOne.next);
         assertNotNull(response);
@@ -234,7 +219,7 @@ public class StepWorkflowTest {
     }
 
     @ParameterizedTest
-    @MethodSource("runConditionalWorkflowObjectToTest")
+    @ValueSource(booleans = { true, false })
     public void testRunConditionalWorkflowSuccessPreviousResponse(Boolean predicateTest) {
         // Create and validate butOnlyIf() Builder
         StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
@@ -264,34 +249,6 @@ public class StepWorkflowTest {
         assertTrue(response.wasSuccessful());
         assertEquals(TEST_DATA_THREE, response.getData());
         assertNull(response.getException());
-    }
-
-    private void successfulExecutor() {
-        // No body, should always succeed.
-    }
-
-    private Integer successfulDataSupplierOne() {
-        return TEST_DATA_ONE;
-    }
-
-    private Integer successfulDataSupplierTwo() {
-        return TEST_DATA_TWO;
-    }
-
-    private Integer successfulDataSupplierThree() {
-        return TEST_DATA_THREE;
-    }
-
-    private Integer successfulFunctionOne(Object object) {
-        return TEST_DATA_FOUR;
-    }
-
-    private Integer successfulFunctionTwo(Object object) {
-        return TEST_DATA_FIVE;
-    }
-
-    private Integer unsuccessfulDataSupplier() throws IntegrationException {
-        throw integrationException;
     }
 
 }
