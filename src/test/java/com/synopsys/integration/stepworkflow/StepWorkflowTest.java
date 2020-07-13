@@ -14,74 +14,57 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.synopsys.integration.exception.IntegrationException;
 
 public class StepWorkflowTest {
-    public static final Integer TEST_DATA_ONE = 1;
-    public static final Integer TEST_DATA_TWO = 2;
-    public static final Integer TEST_DATA_THREE = 3;
-    public static final Integer TEST_DATA_FOUR = 4;
-    public static final Integer TEST_DATA_FIVE = 5;
+    public static final Integer DATA_ONE = 1;
+    public static final Integer DATA_TWO = 2;
+    public static final Integer DATA_THREE = 3;
+    public static final Integer DATA_FOUR = 4;
 
     private static final IntegrationException integrationException = new IntegrationException("Exception #1");
 
-    private SubStep<Object, Integer> subStepSupplierOne;
-    private SubStep<Object, Integer> subStepSupplierTwo;
-    private SubStep<Object, Integer> subStepSupplierThree;
-    private SubStep<Object, Object> subStepExecutorOne;
-    private SubStep<Integer, Object> subStepFunctionOne;
-    private SubStep<Integer, Object> subStepFunctionTwo;
-    private StepWorkflow.FlowController<Object, Integer> flowControllerOne;
-    private StepWorkflow.Builder<Integer> successfulBuilderOfSupplierOne;
-    private StepWorkflow.Builder<Integer> builderThenSubStepSupplierTwo;
+    private static final SubStep<Object, Integer> subStepSupplierDataOne = SubStep.ofSupplier(() -> DATA_ONE);
+    private static final SubStep<Object, Integer> subStepSupplierDataTwo = SubStep.ofSupplier(() -> DATA_TWO);
+    private static final SubStep<Object, Integer> subStepSupplierDataThree = SubStep.ofSupplier(() -> DATA_THREE);
+    private static final SubStep<Integer, Object> subStepFunctionDataFour = SubStep.ofFunction((Integer integer) -> DATA_FOUR);
+    private static final SubStep<Object, Object> subStepExecutorDataless = SubStep.ofExecutor(() -> {});
+    private static final SubStep<Object, Integer> subStepSupplierException = SubStep.ofSupplier(() -> {throw integrationException;});
 
-    private StepWorkflow.Builder<Integer> unsuccessfulBuilderOfSupplierOne;
-    private SubStep<Object, Integer> unsuccessfulSubStepSupplierOne;
+    private StepWorkflow.FlowController<Object, Integer> flowControllerDataOne;
+    private StepWorkflow.Builder<Integer> successfulBuilderOfSupplierDataOne;
+    private StepWorkflow.Builder<Integer> unsuccessfulBuilderOfSupplierException;
 
     @BeforeEach
     public void setup() {
-        subStepSupplierOne = SubStep.ofSupplier(() -> TEST_DATA_ONE);
-        subStepSupplierTwo = SubStep.ofSupplier(() -> TEST_DATA_TWO);
-        subStepSupplierThree = SubStep.ofSupplier(() -> TEST_DATA_THREE);
-        subStepExecutorOne = SubStep.ofExecutor(() -> {});
-        subStepFunctionOne = SubStep.ofFunction((Integer integer) -> TEST_DATA_FOUR);
-        subStepFunctionTwo = SubStep.ofFunction((Integer integer) -> TEST_DATA_FIVE);
+        flowControllerDataOne = new StepWorkflow.FlowController<>(subStepSupplierDataOne);
+        assertEquals(subStepSupplierDataOne, flowControllerDataOne.step);
+        assertNull(flowControllerDataOne.next);
+        assertNull(flowControllerDataOne.getResponse());
 
-        flowControllerOne = new StepWorkflow.FlowController<>(subStepSupplierOne);
-        assertEquals(subStepSupplierOne, flowControllerOne.step);
-        assertNull(flowControllerOne.next);
-        assertNull(flowControllerOne.getResponse());
+        successfulBuilderOfSupplierDataOne = StepWorkflow.first(subStepSupplierDataOne);
+        assertEquals(subStepSupplierDataOne, successfulBuilderOfSupplierDataOne.start.step);
+        assertEquals(subStepSupplierDataOne, successfulBuilderOfSupplierDataOne.end.step);
+        assertNull(successfulBuilderOfSupplierDataOne.start.next);
+        assertNull(successfulBuilderOfSupplierDataOne.end.next);
 
-        successfulBuilderOfSupplierOne = StepWorkflow.first(subStepSupplierOne);
-        assertEquals(subStepSupplierOne, successfulBuilderOfSupplierOne.start.step);
-        assertEquals(subStepSupplierOne, successfulBuilderOfSupplierOne.end.step);
-        assertNull(successfulBuilderOfSupplierOne.start.next);
-        assertNull(successfulBuilderOfSupplierOne.end.next);
-
-        builderThenSubStepSupplierTwo = successfulBuilderOfSupplierOne.then(subStepSupplierTwo);
-        assertEquals(subStepSupplierOne, builderThenSubStepSupplierTwo.start.step);
-        assertEquals(subStepSupplierTwo, builderThenSubStepSupplierTwo.end.step);
-        assertEquals(subStepSupplierTwo, builderThenSubStepSupplierTwo.start.next.step);
-        assertNull(builderThenSubStepSupplierTwo.end.next);
-
-        unsuccessfulSubStepSupplierOne = SubStep.ofSupplier(() -> {throw integrationException;});
-        unsuccessfulBuilderOfSupplierOne = StepWorkflow.first(unsuccessfulSubStepSupplierOne);
-        assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.start.step);
-        assertEquals(unsuccessfulSubStepSupplierOne, unsuccessfulBuilderOfSupplierOne.end.step);
-        assertNull(unsuccessfulBuilderOfSupplierOne.start.next);
-        assertNull(unsuccessfulBuilderOfSupplierOne.end.next);
+        unsuccessfulBuilderOfSupplierException = StepWorkflow.first(subStepSupplierException);
+        assertEquals(subStepSupplierException, unsuccessfulBuilderOfSupplierException.start.step);
+        assertEquals(subStepSupplierException, unsuccessfulBuilderOfSupplierException.end.step);
+        assertNull(unsuccessfulBuilderOfSupplierException.start.next);
+        assertNull(unsuccessfulBuilderOfSupplierException.end.next);
     }
 
     @Test
     public void testSuccessfulSingleStepDataStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(subStepSupplierOne)
+        StepWorkflowResponse<Integer> response = StepWorkflow.just(subStepSupplierDataOne)
                                                      .run();
 
         assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_ONE, response.getData());
+        assertEquals(DATA_ONE, response.getData());
         assertNull(response.getException());
     }
 
     @Test
     public void testSuccessfulSingleStepDatalessStepWorkflow() {
-        StepWorkflowResponse<Object> response = StepWorkflow.just(subStepExecutorOne)
+        StepWorkflowResponse<Object> response = StepWorkflow.just(subStepExecutorDataless)
                                                     .run();
 
         assertTrue(response.wasSuccessful());
@@ -91,7 +74,7 @@ public class StepWorkflowTest {
 
     @Test
     public void testUnsuccessfulSingleStepStepWorkflow() {
-        StepWorkflowResponse<Integer> response = StepWorkflow.just(unsuccessfulSubStepSupplierOne)
+        StepWorkflowResponse<Integer> response = StepWorkflow.just(subStepSupplierException)
                                                      .run();
 
         assertFalse(response.wasSuccessful());
@@ -101,41 +84,41 @@ public class StepWorkflowTest {
 
     @Test
     public void testFlowControllerAppendAndConstructor() {
-        StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerOne.append(subStepSupplierTwo);
+        StepWorkflow.FlowController<?, Integer> appendFlowController = flowControllerDataOne.append(subStepSupplierDataTwo);
 
-        assertEquals(subStepSupplierOne, flowControllerOne.step);
-        assertEquals(appendFlowController, flowControllerOne.next);
-        assertNull(flowControllerOne.getResponse());
-        assertEquals(subStepSupplierTwo, appendFlowController.step);
-        assertEquals(subStepSupplierTwo, flowControllerOne.next.step);
+        assertEquals(subStepSupplierDataOne, flowControllerDataOne.step);
+        assertEquals(appendFlowController, flowControllerDataOne.next);
+        assertNull(flowControllerDataOne.getResponse());
+        assertEquals(subStepSupplierDataTwo, appendFlowController.step);
+        assertEquals(subStepSupplierDataTwo, flowControllerDataOne.next.step);
         assertNull(appendFlowController.next);
         assertNull(appendFlowController.getResponse());
     }
 
     @Test
     public void testFlowControllerRunStepSuccess() {
-        flowControllerOne.runStep(SubStepResponse.SUCCESS());
-        SubStepResponse<Integer> response = flowControllerOne.getResponse();
+        flowControllerDataOne.runStep(SubStepResponse.SUCCESS());
+        SubStepResponse<Integer> response = flowControllerDataOne.getResponse();
 
         // Ensure that response is the only field that was changed as a result of runStep() being called
-        assertEquals(subStepSupplierOne, flowControllerOne.step);
-        assertNull(flowControllerOne.next);
+        assertEquals(subStepSupplierDataOne, flowControllerDataOne.step);
+        assertNull(flowControllerDataOne.next);
         assertNotNull(response);
         assertTrue(response.isSuccess());
         assertTrue(response.hasData());
-        assertEquals(TEST_DATA_ONE, response.getData());
+        assertEquals(DATA_ONE, response.getData());
         assertFalse(response.hasException());
         assertNull(response.getException());
     }
 
     @Test
     public void testFlowControllerRunStepFailure() {
-        flowControllerOne.runStep(SubStepResponse.FAILURE(integrationException));
-        SubStepResponse<Integer> response = flowControllerOne.getResponse();
+        flowControllerDataOne.runStep(SubStepResponse.FAILURE(integrationException));
+        SubStepResponse<Integer> response = flowControllerDataOne.getResponse();
 
         // Ensure that response is the only field that was changed as a result of runStep() being called
-        assertEquals(subStepSupplierOne, flowControllerOne.step);
-        assertNull(flowControllerOne.next);
+        assertEquals(subStepSupplierDataOne, flowControllerDataOne.step);
+        assertNull(flowControllerDataOne.next);
         assertNotNull(response);
         assertTrue(response.isFailure());
         assertFalse(response.hasData());
@@ -145,42 +128,71 @@ public class StepWorkflowTest {
 
     @Test
     public void testBuilderAndSometimes() {
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
-        StepWorkflow.Builder<Object> buildBuilder = andSometimesConditional.build(subStepFunctionOne);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierDataOne.andSometimes(subStepSupplierDataThree);
 
-        assertEquals(subStepSupplierOne, buildBuilder.start.step);
-        assertEquals(subStepFunctionOne, buildBuilder.start.next.step);
-        assertNull(buildBuilder.start.next.next);
-        assertEquals(subStepFunctionOne, buildBuilder.end.step);
-        assertNull(buildBuilder.end.next);
+        assertEquals(subStepSupplierDataThree, andSometimesConditional.conditionalStepWorkflowBuilder.start.step);
+        assertNull(andSometimesConditional.conditionalStepWorkflowBuilder.start.next);
+        assertEquals(subStepSupplierDataOne, andSometimesConditional.parentBuilder.start.step);
+        assertNull(andSometimesConditional.parentBuilder.start.next);
     }
 
     @Test
     public void testBuilderRun() {
-        StepWorkflowResponse<Integer> response = successfulBuilderOfSupplierOne.run();
+        StepWorkflowResponse<Integer> response = successfulBuilderOfSupplierDataOne.run();
 
         assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_ONE, response.getData());
+        assertEquals(DATA_ONE, response.getData());
         assertNull(response.getException());
     }
 
     @Test
     public void testConditionalConstructorAndThen() {
-        StepWorkflow.ConditionalBuilder<Integer, Integer> conditionalBuilder = new StepWorkflow.ConditionalBuilder(builderThenSubStepSupplierTwo, subStepSupplierThree);
-        StepWorkflow.ConditionalBuilder<Integer, Object> thenConditionalBuilder = conditionalBuilder.then(subStepFunctionOne);
-        StepWorkflow.Builder<Object> buildBuilder = thenConditionalBuilder.build(subStepFunctionTwo);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> conditionalBuilder = new StepWorkflow.ConditionalBuilder<>(successfulBuilderOfSupplierDataOne, subStepSupplierDataTwo);
 
-        assertEquals(subStepSupplierOne, buildBuilder.start.step);
-        assertEquals(subStepSupplierTwo, buildBuilder.start.next.step);
-        assertEquals(subStepFunctionTwo, buildBuilder.end.step);
+        // Ensure that both start.next and end.next are both null for conditionalBuilder.conditionalStepWorkflowBuilder
+        assertNull(conditionalBuilder.conditionalStepWorkflowBuilder.start.next);
+        assertNull(conditionalBuilder.conditionalStepWorkflowBuilder.end.next);
+
+        // Validate conditionalBuilder
+        assertEquals(subStepSupplierDataTwo, conditionalBuilder.conditionalStepWorkflowBuilder.start.step);
+        assertEquals(subStepSupplierDataOne, conditionalBuilder.parentBuilder.start.step);
+        assertEquals(successfulBuilderOfSupplierDataOne, conditionalBuilder.parentBuilder);
+        assertNull(conditionalBuilder.parentBuilder.start.next);
+        assertNull(conditionalBuilder.parentBuilder.end.next);
+
+        //conditionalBuilder.then(subStepSupplierDataSix);
+        StepWorkflow.ConditionalBuilder<Integer, Object> thenConditionalBuilder = conditionalBuilder.then(subStepFunctionDataFour);
+
+        // Ensure that conditionalStepWorkflowBuilder.conditionalBuilder has been changed and both
+        // start.next.step and end.next.step are both now equal to subStepFunctionDataFour after running then() for conditionalStepWorkflowBuilder
+        assertEquals(subStepSupplierDataTwo, conditionalBuilder.conditionalStepWorkflowBuilder.start.step);
+        assertEquals(subStepFunctionDataFour, conditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
+        assertEquals(subStepSupplierDataTwo, conditionalBuilder.conditionalStepWorkflowBuilder.end.step);
+        assertEquals(subStepFunctionDataFour, conditionalBuilder.conditionalStepWorkflowBuilder.end.next.step);
+
+        // Ensure conditionalBuilder.parentBuilder has not changed since running then()
+        assertEquals(subStepSupplierDataOne, conditionalBuilder.parentBuilder.start.step);
+        assertEquals(successfulBuilderOfSupplierDataOne, conditionalBuilder.parentBuilder);
+        assertNull(conditionalBuilder.parentBuilder.start.next);
+        assertNull(conditionalBuilder.parentBuilder.end.next);
+
+        // Validate thenConditionalBuilder
+        assertEquals(successfulBuilderOfSupplierDataOne, thenConditionalBuilder.parentBuilder);
+        assertEquals(conditionalBuilder.parentBuilder, thenConditionalBuilder.parentBuilder);
+        assertEquals(subStepSupplierDataTwo, thenConditionalBuilder.conditionalStepWorkflowBuilder.start.step);
+        assertEquals(subStepFunctionDataFour, thenConditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
+        assertEquals(subStepFunctionDataFour, thenConditionalBuilder.conditionalStepWorkflowBuilder.end.step);
+        assertEquals(subStepSupplierDataOne, thenConditionalBuilder.parentBuilder.start.step);
+        assertNull(thenConditionalBuilder.parentBuilder.start.next);
+        assertNull(thenConditionalBuilder.conditionalStepWorkflowBuilder.end.next);
     }
 
     @Test
     public void testConditionalButOnlyIf() {
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierDataOne.andSometimes(subStepSupplierDataTwo);
         StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> true);
 
-        assertEquals(subStepSupplierOne, butOnlyIfBuilder.start.step);
+        assertEquals(subStepSupplierDataOne, butOnlyIfBuilder.start.step);
         assertNotNull(butOnlyIfBuilder.start.next);
         assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
         assertNull(butOnlyIfBuilder.end.next);
@@ -189,20 +201,19 @@ public class StepWorkflowTest {
     @Test
     public void testRunConditionalWorkflowFailedPreviousResponse() {
         // Create and validate butOnlyIf() Builder
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = unsuccessfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = unsuccessfulBuilderOfSupplierException.andSometimes(subStepSupplierDataTwo);
         StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> true);
-        assertEquals(unsuccessfulSubStepSupplierOne, butOnlyIfBuilder.start.step);
+        assertEquals(subStepSupplierException, butOnlyIfBuilder.start.step);
         assertNotNull(butOnlyIfBuilder.start.next);
         assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
         assertNull(butOnlyIfBuilder.end.next);
 
         // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierThree);
-        assertEquals(unsuccessfulSubStepSupplierOne, thenBuilder.start.step);
+        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierDataThree);
+        assertEquals(subStepSupplierException, thenBuilder.start.step);
         assertNotNull(thenBuilder.start.next);
-        assertEquals(subStepSupplierThree, thenBuilder.end.step);
-        assertEquals(unsuccessfulSubStepSupplierOne, thenBuilder.start.step);
-        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertEquals(subStepSupplierDataThree, thenBuilder.end.step);
+        assertEquals(subStepSupplierException, thenBuilder.start.step);
         assertNotNull(thenBuilder.start.next.step);
         assertNull(thenBuilder.end.next);
 
@@ -222,20 +233,19 @@ public class StepWorkflowTest {
     @ValueSource(booleans = { true, false })
     public void testRunConditionalWorkflowSuccessPreviousResponse(Boolean predicateTest) {
         // Create and validate butOnlyIf() Builder
-        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierOne.andSometimes(subStepSupplierTwo);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> andSometimesConditional = successfulBuilderOfSupplierDataOne.andSometimes(subStepSupplierDataTwo);
         StepWorkflow.Builder<Object> butOnlyIfBuilder = andSometimesConditional.butOnlyIf(new Object(), ignored -> predicateTest);
-        assertEquals(subStepSupplierOne, butOnlyIfBuilder.start.step);
+        assertEquals(subStepSupplierDataOne, butOnlyIfBuilder.start.step);
         assertNotNull(butOnlyIfBuilder.start.next);
         assertEquals(butOnlyIfBuilder.start.next.step, butOnlyIfBuilder.end.step);
         assertNull(butOnlyIfBuilder.end.next);
 
         // Create and validate then() Builder
-        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierThree);
-        assertEquals(subStepSupplierOne, thenBuilder.start.step);
+        StepWorkflow.Builder<Integer> thenBuilder = butOnlyIfBuilder.then(subStepSupplierDataThree);
+        assertEquals(subStepSupplierDataOne, thenBuilder.start.step);
         assertNotNull(thenBuilder.start.next);
-        assertEquals(subStepSupplierThree, thenBuilder.end.step);
-        assertEquals(subStepSupplierOne, thenBuilder.start.step);
-        assertEquals(subStepSupplierThree, thenBuilder.end.step);
+        assertEquals(subStepSupplierDataOne, thenBuilder.start.step);
+        assertEquals(subStepSupplierDataThree, thenBuilder.end.step);
         assertNotNull(thenBuilder.start.next.step);
         assertNull(thenBuilder.end.next);
 
@@ -247,7 +257,7 @@ public class StepWorkflowTest {
         // Call run() and validate return StepWorkflowResponse
         StepWorkflowResponse<Integer> response = buildStepWorkflow.run();
         assertTrue(response.wasSuccessful());
-        assertEquals(TEST_DATA_THREE, response.getData());
+        assertEquals(DATA_THREE, response.getData());
         assertNull(response.getException());
     }
 
