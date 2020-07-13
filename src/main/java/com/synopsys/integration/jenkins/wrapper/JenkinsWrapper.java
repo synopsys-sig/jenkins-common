@@ -20,7 +20,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.wrapper;
 
 import static hudson.model.Items.XSTREAM;
 
@@ -70,6 +70,18 @@ public class JenkinsWrapper {
     public void migrateFieldFrom(String oldName, Class clazz, String newName) {
         XSTREAM.aliasField(oldName, clazz, newName);
         XSTREAM.aliasField(newName, clazz, newName);
+    }
+
+    public JenkinsVersionHelper getVersionHelper() {
+        return new JenkinsVersionHelper(this);
+    }
+
+    public JenkinsProxyHelper getProxyHelper() {
+        return JenkinsProxyHelper.fromJenkins(this);
+    }
+
+    public SynopsysCredentialsHelper getCredentialsHelper() {
+        return new SynopsysCredentialsHelper(this);
     }
 
 }
