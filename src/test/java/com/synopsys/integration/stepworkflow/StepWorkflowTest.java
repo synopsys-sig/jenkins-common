@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,23 +54,25 @@ public class StepWorkflowTest {
     }
 
     @Test
-    public void testSuccessfulSingleStepDataStepWorkflow() {
+    public void testSuccessfulSingleStepDataStepWorkflow() throws Exception {
         StepWorkflowResponse<Integer> response = StepWorkflow.just(subStepSupplierDataOne)
                                                      .run();
 
         assertTrue(response.wasSuccessful());
         assertEquals(DATA_ONE, response.getData());
         assertNull(response.getException());
+        assertEquals(DATA_ONE, response.getDataOrThrowException());
     }
 
     @Test
-    public void testSuccessfulSingleStepDatalessStepWorkflow() {
+    public void testSuccessfulSingleStepDatalessStepWorkflow() throws Exception {
         StepWorkflowResponse<Object> response = StepWorkflow.just(subStepExecutorDataless)
                                                     .run();
 
         assertTrue(response.wasSuccessful());
         assertNull(response.getData());
         assertNull(response.getException());
+        assertNull(response.getDataOrThrowException());
     }
 
     @Test
@@ -79,7 +82,8 @@ public class StepWorkflowTest {
 
         assertFalse(response.wasSuccessful());
         assertNull(response.getData());
-        assertNotNull(response.getException());
+        assertEquals(integrationException, response.getException());
+        assertThrows(IntegrationException.class, response::getDataOrThrowException);
     }
 
     @Test
