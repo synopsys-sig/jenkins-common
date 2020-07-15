@@ -139,7 +139,7 @@ public class JenkinsStepWorkflowTest {
 
         @Override
         protected StepWorkflow<String> buildWorkflow() throws AbortException {
-            return StepWorkflow.just(SubStep.ofSupplier(this::successfulDataSupplier));
+            return StepWorkflow.just(SubStep.ofSupplier(() -> responseData));
         }
 
         @Override
@@ -147,9 +147,6 @@ public class JenkinsStepWorkflowTest {
             return null;
         }
 
-        private String successfulDataSupplier() {
-            return responseData;
-        }
     }
 
 }
