@@ -52,17 +52,17 @@ public class JenkinsWrapper {
         return Optional.ofNullable(jenkins);
     }
 
-    public Optional<VersionNumber> getVersion() {
+    protected Optional<VersionNumber> getVersion() {
         return Optional.ofNullable(Jenkins.getVersion());
     }
 
-    public <T extends Credentials> Optional<T> getCredentialsById(IdMatcher idMatcher, Class<T> credentialsType) {
+    protected <T extends Credentials> Optional<T> getCredentialsById(IdMatcher idMatcher, Class<T> credentialsType) {
         return CredentialsProvider.lookupCredentials(credentialsType, jenkins, ACL.SYSTEM, Collections.emptyList()).stream()
                    .filter(idMatcher::matches)
                    .findAny();
     }
 
-    public Optional<ProxyConfiguration> getProxyConfiguration() {
+    protected Optional<ProxyConfiguration> getProxyConfiguration() {
         return Optional.ofNullable(jenkins)
                    .map(instance -> instance.proxy);
     }
