@@ -22,8 +22,8 @@ import hudson.util.Secret;
 
 public class SynopsysCredentialsHelperTest {
 
-    private final String maskedPassword = "************************";
-    private static String credentialsId = "synopsys/blackduck";
+    private final static String maskedPassword = "************************";
+    private final static String credentialsId = "synopsys/blackduck";
 
     private static Stream<String> invalidCredentialIds() {
         return Stream.of("", " ", "  ", null);
