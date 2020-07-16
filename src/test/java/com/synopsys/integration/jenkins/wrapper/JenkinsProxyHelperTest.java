@@ -1,4 +1,4 @@
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.wrapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -83,32 +83,34 @@ public class JenkinsProxyHelperTest {
     }
 
     @Test
-    public void testJenkinsProxyHelperNullJenkins() {
-        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(null).getProxyInfo("www.null-jenkins.com");
+    public void testFromJenkinsNullJenkins() {
+        JenkinsWrapper jenkinsWrapper = JenkinsWrapper.initializeFromJenkinsJVM();
+        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo("www.null-jenkins.com");
         noProxyInfoValidation(proxyInfo);
     }
 
     @ParameterizedTest
     @MethodSource("noProxyInfo")
-    public void testJenkinsProxyHelperNoProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
+    public void testConstructorNoProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
         ProxyInfo proxyInfo = new JenkinsProxyHelper(proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, testNtlmDomain, ntlmWorkstation).getProxyInfo(url);
         noProxyInfoValidation(proxyInfo);
     }
 
     @ParameterizedTest
     @MethodSource({ "noProxyInfo", "noProxyInfoWithNtlmDomain" })
-    public void testJenkinsProxyHelperNoProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
+    public void testFromJenkinsNoProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
         String returnProxyUserName = (testNtlmDomain == null ? "" : ntlmDomain + "\\") + proxyUsername;
-        ProxyConfiguration proxyConfiguration = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkins = Mockito.mock(Jenkins.class);
+        ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
+        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
+        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
 
-        setJenkinsFields(jenkins, proxyConfiguration);
+        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
 
-        Mockito.when(proxyConfiguration.getUserName()).thenReturn(returnProxyUserName);
-        Mockito.when(proxyConfiguration.getPassword()).thenReturn(proxyPassword);
-        Mockito.when(proxyConfiguration.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
+        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(returnProxyUserName);
+        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(proxyPassword);
+        Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
 
-        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkins).getProxyInfo(url);
+        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo(url);
         noProxyInfoValidation(proxyInfo);
     }
 
@@ -125,25 +127,26 @@ public class JenkinsProxyHelperTest {
 
     @ParameterizedTest
     @MethodSource({ "validProxyInfo", "validProxyInfoWithNtlmDomain" })
-    public void testJenkinsProxyHelperValidProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testProxyUsername) {
+    public void testConstructorValidProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testProxyUsername) {
         ProxyInfo proxyInfo = new JenkinsProxyHelper(proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, testProxyUsername, ntlmWorkstation).getProxyInfo(url);
         validProxyInfoValidation(proxyInfo, proxyHost, proxyPort, proxyUsername, proxyPassword, testProxyUsername, ntlmWorkstation);
     }
 
     @ParameterizedTest
     @MethodSource({ "validProxyInfo", "validProxyInfoWithNtlmDomain" })
-    public void testJenkinsProxyHelperValidProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
+    public void testFromJenkinsValidProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
         String returnProxyUserName = (testNtlmDomain == null ? "" : ntlmDomain + "\\") + proxyUsername;
-        ProxyConfiguration proxyConfiguration = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkins = Mockito.mock(Jenkins.class);
+        ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
+        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
+        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
 
-        setJenkinsFields(jenkins, proxyConfiguration);
+        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
 
-        Mockito.when(proxyConfiguration.getUserName()).thenReturn(returnProxyUserName);
-        Mockito.when(proxyConfiguration.getPassword()).thenReturn(proxyPassword);
-        Mockito.when(proxyConfiguration.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
+        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(returnProxyUserName);
+        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(proxyPassword);
+        Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
 
-        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkins).getProxyInfo(url);
+        ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo(url);
         validProxyInfoValidation(proxyInfo, proxyHost, proxyPort, proxyUsername, proxyPassword, testNtlmDomain, StringUtils.EMPTY);
     }
 

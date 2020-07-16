@@ -20,12 +20,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.wrapper;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +36,6 @@ import com.synopsys.integration.rest.proxy.ProxyInfo;
 import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
 
 import hudson.ProxyConfiguration;
-import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelper {
     private static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
@@ -74,10 +72,9 @@ public class JenkinsProxyHelper {
         this.isBlank = true;
     }
 
-    public static JenkinsProxyHelper fromJenkins(Jenkins jenkins) {
-        ProxyConfiguration proxyConfig = Optional.ofNullable(jenkins)
-                                             .map(instance -> instance.proxy)
-                                             .orElse(null);
+    public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
+        ProxyConfiguration proxyConfig = jenkinsWrapper.getProxyConfiguration().orElse(null);
+
         if (proxyConfig == null) {
             return NO_PROXY;
         }

@@ -20,31 +20,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.jenkins;
+package com.synopsys.integration.jenkins.wrapper;
 
 import java.util.Optional;
 
 import hudson.Plugin;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
-import jenkins.model.Jenkins;
 
 public class JenkinsVersionHelper {
-    private final Jenkins jenkins;
+    private final JenkinsWrapper jenkinsWrapper;
 
-    public JenkinsVersionHelper(Jenkins jenkins) {
-        this.jenkins = jenkins;
+    public JenkinsVersionHelper(JenkinsWrapper jenkinsWrapper) {
+        this.jenkinsWrapper = jenkinsWrapper;
     }
 
     public Optional<String> getPluginVersion(String pluginName) {
-        return Optional.ofNullable(jenkins)
+        return jenkinsWrapper.getJenkins()
                    .map(instance -> instance.getPlugin(pluginName))
                    .map(Plugin::getWrapper)
                    .map(PluginWrapper::getVersion);
     }
 
     public Optional<String> getJenkinsVersion() {
-        return Optional.ofNullable(Jenkins.getVersion())
+        return jenkinsWrapper.getVersion()
                    .map(VersionNumber::toString);
     }
 
