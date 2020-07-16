@@ -130,7 +130,7 @@ public class StepWorkflow<T> {
             this.conditionalStepWorkflowBuilder = conditionalStepWorkflowBuilder;
         }
 
-        public <R> ConditionalBuilder<P, R> then(SubStep<T, R> subStep) {
+        public <R> ConditionalBuilder<P, R> then(SubStep<? super T, R> subStep) {
             return new ConditionalBuilder<>(this, conditionalStepWorkflowBuilder.then(subStep));
         }
 

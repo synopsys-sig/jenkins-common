@@ -18,14 +18,12 @@ public class StepWorkflowTest {
     public static final Integer DATA_ONE = 1;
     public static final Integer DATA_TWO = 2;
     public static final Integer DATA_THREE = 3;
-    public static final Integer DATA_FOUR = 4;
 
     private static final IntegrationException integrationException = new IntegrationException("Exception #1");
 
     private static final SubStep<Object, Integer> subStepSupplierDataOne = SubStep.ofSupplier(() -> DATA_ONE);
     private static final SubStep<Object, Integer> subStepSupplierDataTwo = SubStep.ofSupplier(() -> DATA_TWO);
     private static final SubStep<Object, Integer> subStepSupplierDataThree = SubStep.ofSupplier(() -> DATA_THREE);
-    private static final SubStep<Integer, Object> subStepFunctionDataFour = SubStep.ofFunction((Integer integer) -> DATA_FOUR);
     private static final SubStep<Object, Object> subStepExecutorDataless = SubStep.ofExecutor(() -> {});
     private static final SubStep<Object, Integer> subStepSupplierException = SubStep.ofSupplier(() -> {throw integrationException;});
 
@@ -165,14 +163,14 @@ public class StepWorkflowTest {
         assertNull(conditionalBuilder.parentBuilder.end.next);
 
         //conditionalBuilder.then(subStepSupplierDataSix);
-        StepWorkflow.ConditionalBuilder<Integer, Object> thenConditionalBuilder = conditionalBuilder.then(subStepFunctionDataFour);
+        StepWorkflow.ConditionalBuilder<Integer, Integer> thenConditionalBuilder = conditionalBuilder.then(subStepSupplierDataThree);
 
         // Ensure that conditionalStepWorkflowBuilder.conditionalBuilder has been changed and both
         // start.next.step and end.next.step are both now equal to subStepFunctionDataFour after running then() for conditionalStepWorkflowBuilder
         assertEquals(subStepSupplierDataTwo, conditionalBuilder.conditionalStepWorkflowBuilder.start.step);
-        assertEquals(subStepFunctionDataFour, conditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
+        assertEquals(subStepSupplierDataThree, conditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
         assertEquals(subStepSupplierDataTwo, conditionalBuilder.conditionalStepWorkflowBuilder.end.step);
-        assertEquals(subStepFunctionDataFour, conditionalBuilder.conditionalStepWorkflowBuilder.end.next.step);
+        assertEquals(subStepSupplierDataThree, conditionalBuilder.conditionalStepWorkflowBuilder.end.next.step);
 
         // Ensure conditionalBuilder.parentBuilder has not changed since running then()
         assertEquals(subStepSupplierDataOne, conditionalBuilder.parentBuilder.start.step);
@@ -184,8 +182,8 @@ public class StepWorkflowTest {
         assertEquals(successfulBuilderOfSupplierDataOne, thenConditionalBuilder.parentBuilder);
         assertEquals(conditionalBuilder.parentBuilder, thenConditionalBuilder.parentBuilder);
         assertEquals(subStepSupplierDataTwo, thenConditionalBuilder.conditionalStepWorkflowBuilder.start.step);
-        assertEquals(subStepFunctionDataFour, thenConditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
-        assertEquals(subStepFunctionDataFour, thenConditionalBuilder.conditionalStepWorkflowBuilder.end.step);
+        assertEquals(subStepSupplierDataThree, thenConditionalBuilder.conditionalStepWorkflowBuilder.start.next.step);
+        assertEquals(subStepSupplierDataThree, thenConditionalBuilder.conditionalStepWorkflowBuilder.end.step);
         assertEquals(subStepSupplierDataOne, thenConditionalBuilder.parentBuilder.start.step);
         assertNull(thenConditionalBuilder.parentBuilder.start.next);
         assertNull(thenConditionalBuilder.conditionalStepWorkflowBuilder.end.next);
