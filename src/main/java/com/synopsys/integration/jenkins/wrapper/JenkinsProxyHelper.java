@@ -123,7 +123,7 @@ public class JenkinsProxyHelper {
     }
 
     private boolean shouldIgnoreHost(String hostToMatch) {
-        if (StringUtils.isBlank(hostToMatch) || ignoredProxyHosts == null || ignoredProxyHosts.isEmpty()) {
+        if (ignoredProxyHosts == null || ignoredProxyHosts.isEmpty()) {
             return false;
         }
 
