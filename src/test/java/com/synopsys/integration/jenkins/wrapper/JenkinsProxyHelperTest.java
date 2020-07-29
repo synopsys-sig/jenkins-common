@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,6 @@ import org.mockito.internal.util.reflection.FieldSetter;
 import com.synopsys.integration.rest.proxy.ProxyInfo;
 
 import hudson.ProxyConfiguration;
-import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelperTest {
     final static String expectedNtlmDomain = "ntlmDomain";
@@ -85,11 +85,9 @@ public class JenkinsProxyHelperTest {
     @MethodSource({ "noProxyInfo", "noProxyInfoWithNtlmDomain" })
     public void testFromJenkinsNoProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String proxyGetUserName) {
         ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
-        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
+        JenkinsWrapper jenkinsWrapper = Mockito.mock(JenkinsWrapper.class);
 
-        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
-
+        Mockito.when(jenkinsWrapper.getProxyConfiguration()).thenReturn(Optional.of(proxyConfigurationMock));
         Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(proxyGetUserName);
         Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(expectedProxyPassword);
         Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
@@ -120,11 +118,16 @@ public class JenkinsProxyHelperTest {
     @MethodSource({ "validProxyInfoInputTestData" })
     public void testFromJenkinsValidProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String expectedNtlmDomain, String proxyGetUserName) {
         ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
-        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
+        JenkinsWrapper jenkinsWrapper = Mockito.mock(JenkinsWrapper.class);
 
-        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
+        try {
+            FieldSetter.setField(proxyConfigurationMock, proxyConfigurationMock.getClass().getDeclaredField("name"), expectedProxyHost);
+            FieldSetter.setField(proxyConfigurationMock, proxyConfigurationMock.getClass().getDeclaredField("port"), expectedProxyPort);
+        } catch (NoSuchFieldException exception) {
+            fail("ProxyConfiguration has changed it's API: ", exception);
+        }
 
+        Mockito.when(jenkinsWrapper.getProxyConfiguration()).thenReturn(Optional.of(proxyConfigurationMock));
         Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(proxyGetUserName);
         Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(expectedProxyPassword);
         Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
@@ -145,13 +148,4 @@ public class JenkinsProxyHelperTest {
         assertEquals(ntlmWorkstation, proxyInfo.getNtlmWorkstation().orElse(StringUtils.EMPTY));
     }
 
-    private void setJenkinsFields(Jenkins jenkins, ProxyConfiguration proxyConfiguration) {
-        try {
-            FieldSetter.setField(jenkins, jenkins.getClass().getField("proxy"), proxyConfiguration);
-            FieldSetter.setField(proxyConfiguration, proxyConfiguration.getClass().getDeclaredField("name"), expectedProxyHost);
-            FieldSetter.setField(proxyConfiguration, proxyConfiguration.getClass().getDeclaredField("port"), expectedProxyPort);
-        } catch (NoSuchFieldException exception) {
-            fail("Jenkins has changed it's API: ", exception);
-        }
-    }
 }
