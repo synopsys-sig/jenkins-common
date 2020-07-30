@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -21,20 +22,19 @@ import org.mockito.internal.util.reflection.FieldSetter;
 import com.synopsys.integration.rest.proxy.ProxyInfo;
 
 import hudson.ProxyConfiguration;
-import jenkins.model.Jenkins;
 
 public class JenkinsProxyHelperTest {
-    final static String ntlmDomain = "ntlmDomain";
-
-    final String proxyHost = "proxyHost";
-    final String proxyUsername = "proxyUsername";
-    final String proxyPassword = "proxyPassword";
-    final String ntlmWorkstation = "ntlmWorkstation";
-    final int proxyPort = 13;
+    final static String expectedNtlmDomain = "ntlmDomain";
+    final static String expectedProxyUsername = "proxyUsername";
+    final static String expectedProxyHost = "proxyHost";
+    final static String expectedProxyPassword = "proxyPassword";
+    final static String expectedNtlmWorkstation = "ntlmWorkstation";
+    final static int expectedProxyPort = 13;
+    final static String hostToExclude = "www.exclude.com";
+    final static String hostToInclude = "https://www.include.com";
+    final static Pattern hostExcludePattern = Pattern.compile(hostToExclude);
 
     private static Stream<Arguments> noProxyInfo() {
-        final String hostToExclude = "www.exclude.com";
-        Pattern hostExcludePattern = Pattern.compile(hostToExclude);
         List<Pattern> ignoredProxyHosts = new ArrayList<>();
         ignoredProxyHosts.add(hostExcludePattern);
 
@@ -46,39 +46,24 @@ public class JenkinsProxyHelperTest {
     }
 
     private static Stream<Arguments> noProxyInfoWithNtlmDomain() {
-        final String hostToExclude = "www.exclude.com";
-        Pattern hostExcludePattern = Pattern.compile(hostToExclude);
         List<Pattern> ignoredProxyHosts = new ArrayList<>();
         ignoredProxyHosts.add(hostExcludePattern);
 
         return Stream.of(
-            Arguments.of("", ignoredProxyHosts, ntlmDomain),
-            Arguments.of(null, ignoredProxyHosts, ntlmDomain),
-            Arguments.of("https://" + hostToExclude, ignoredProxyHosts, ntlmDomain)
+            Arguments.of("", ignoredProxyHosts, expectedNtlmDomain),
+            Arguments.of(null, ignoredProxyHosts, expectedNtlmDomain + "\\" + expectedProxyUsername),
+            Arguments.of("https://" + hostToExclude, ignoredProxyHosts, "\\" + expectedProxyUsername)
         );
     }
 
-    private static Stream<Arguments> validProxyInfo() {
-        final String hostToInclude = "https://www.include.com";
-        final String hostToExclude = "www.exclude.com";
-        Pattern hostExcludePattern = Pattern.compile(hostToExclude);
-
+    private static Stream<Arguments> validProxyInfoInputTestData() {
         return Stream.of(
-            Arguments.of(hostToInclude, new ArrayList<>(), null),
-            Arguments.of(hostToInclude, null, null),
-            Arguments.of(hostToInclude, Arrays.asList(hostExcludePattern), null)
-        );
-    }
-
-    private static Stream<Arguments> validProxyInfoWithNtlmDomain() {
-        final String hostToInclude = "https://www.include.com";
-        final String hostToExclude = "www.exclude.com";
-        Pattern hostExcludePattern = Pattern.compile(hostToExclude);
-
-        return Stream.of(
-            Arguments.of(hostToInclude, new ArrayList<>(), ntlmDomain),
-            Arguments.of(hostToInclude, null, ntlmDomain),
-            Arguments.of(hostToInclude, Arrays.asList(hostExcludePattern), ntlmDomain)
+            Arguments.of(hostToInclude, new ArrayList<>(), null, expectedProxyUsername),
+            Arguments.of(hostToInclude, null, null, expectedProxyUsername),
+            Arguments.of(hostToInclude, Arrays.asList(hostExcludePattern), null, expectedProxyUsername),
+            Arguments.of(hostToInclude, new ArrayList<>(), expectedNtlmDomain, expectedNtlmDomain + "\\" + expectedProxyUsername),
+            Arguments.of(hostToInclude, null, expectedNtlmDomain, expectedNtlmDomain + "\\" + expectedProxyUsername),
+            Arguments.of(hostToInclude, Arrays.asList(hostExcludePattern), null, expectedProxyUsername)
         );
     }
 
@@ -92,22 +77,19 @@ public class JenkinsProxyHelperTest {
     @ParameterizedTest
     @MethodSource("noProxyInfo")
     public void testConstructorNoProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
-        ProxyInfo proxyInfo = new JenkinsProxyHelper(proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, testNtlmDomain, ntlmWorkstation).getProxyInfo(url);
+        ProxyInfo proxyInfo = new JenkinsProxyHelper(expectedProxyHost, expectedProxyPort, expectedProxyUsername, expectedProxyPassword, ignoredProxyHosts, testNtlmDomain, expectedNtlmWorkstation).getProxyInfo(url);
         noProxyInfoValidation(proxyInfo);
     }
 
     @ParameterizedTest
     @MethodSource({ "noProxyInfo", "noProxyInfoWithNtlmDomain" })
-    public void testFromJenkinsNoProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
-        String returnProxyUserName = (testNtlmDomain == null ? "" : ntlmDomain + "\\") + proxyUsername;
+    public void testFromJenkinsNoProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String proxyGetUserName) {
         ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
-        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
+        JenkinsWrapper jenkinsWrapper = Mockito.mock(JenkinsWrapper.class);
 
-        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
-
-        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(returnProxyUserName);
-        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(proxyPassword);
+        Mockito.when(jenkinsWrapper.getProxyConfiguration()).thenReturn(Optional.of(proxyConfigurationMock));
+        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(proxyGetUserName);
+        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(expectedProxyPassword);
         Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
 
         ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo(url);
@@ -126,50 +108,44 @@ public class JenkinsProxyHelperTest {
     }
 
     @ParameterizedTest
-    @MethodSource({ "validProxyInfo", "validProxyInfoWithNtlmDomain" })
-    public void testConstructorValidProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testProxyUsername) {
-        ProxyInfo proxyInfo = new JenkinsProxyHelper(proxyHost, proxyPort, proxyUsername, proxyPassword, ignoredProxyHosts, testProxyUsername, ntlmWorkstation).getProxyInfo(url);
-        validProxyInfoValidation(proxyInfo, proxyHost, proxyPort, proxyUsername, proxyPassword, testProxyUsername, ntlmWorkstation);
+    @MethodSource({ "validProxyInfoInputTestData" })
+    public void testConstructorValidProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
+        ProxyInfo proxyInfo = new JenkinsProxyHelper(expectedProxyHost, expectedProxyPort, expectedProxyUsername, expectedProxyPassword, ignoredProxyHosts, testNtlmDomain, expectedNtlmWorkstation).getProxyInfo(url);
+        validProxyInfoValidation(proxyInfo, testNtlmDomain, expectedNtlmWorkstation);
     }
 
     @ParameterizedTest
-    @MethodSource({ "validProxyInfo", "validProxyInfoWithNtlmDomain" })
-    public void testFromJenkinsValidProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
-        String returnProxyUserName = (testNtlmDomain == null ? "" : ntlmDomain + "\\") + proxyUsername;
+    @MethodSource({ "validProxyInfoInputTestData" })
+    public void testFromJenkinsValidProxyInfoJenkins(String url, List<Pattern> ignoredProxyHosts, String expectedNtlmDomain, String proxyGetUserName) {
         ProxyConfiguration proxyConfigurationMock = Mockito.mock(ProxyConfiguration.class);
-        Jenkins jenkinsMock = Mockito.mock(Jenkins.class);
-        JenkinsWrapper jenkinsWrapper = new JenkinsWrapper(jenkinsMock);
+        JenkinsWrapper jenkinsWrapper = Mockito.mock(JenkinsWrapper.class);
 
-        setJenkinsFields(jenkinsMock, proxyConfigurationMock);
+        try {
+            FieldSetter.setField(proxyConfigurationMock, proxyConfigurationMock.getClass().getDeclaredField("name"), expectedProxyHost);
+            FieldSetter.setField(proxyConfigurationMock, proxyConfigurationMock.getClass().getDeclaredField("port"), expectedProxyPort);
+        } catch (NoSuchFieldException exception) {
+            fail("ProxyConfiguration has changed it's API: ", exception);
+        }
 
-        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(returnProxyUserName);
-        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(proxyPassword);
+        Mockito.when(jenkinsWrapper.getProxyConfiguration()).thenReturn(Optional.of(proxyConfigurationMock));
+        Mockito.when(proxyConfigurationMock.getUserName()).thenReturn(proxyGetUserName);
+        Mockito.when(proxyConfigurationMock.getPassword()).thenReturn(expectedProxyPassword);
         Mockito.when(proxyConfigurationMock.getNoProxyHostPatterns()).thenReturn(ignoredProxyHosts);
 
         ProxyInfo proxyInfo = JenkinsProxyHelper.fromJenkins(jenkinsWrapper).getProxyInfo(url);
-        validProxyInfoValidation(proxyInfo, proxyHost, proxyPort, proxyUsername, proxyPassword, testNtlmDomain, StringUtils.EMPTY);
+        validProxyInfoValidation(proxyInfo, expectedNtlmDomain, StringUtils.EMPTY);
     }
 
-    private void validProxyInfoValidation(ProxyInfo proxyInfo, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword,
-        String ntlmDomain, String ntlmWorkstation) {
+    private void validProxyInfoValidation(ProxyInfo proxyInfo, String ntlmDomain, String ntlmWorkstation) {
         assertTrue(proxyInfo.getProxy().isPresent());
         assertTrue(proxyInfo.getHost().isPresent());
-        assertEquals(proxyHost, proxyInfo.getHost().get());
-        assertEquals(proxyPort, proxyInfo.getPort());
+        assertEquals(expectedProxyHost, proxyInfo.getHost().get());
+        assertEquals(expectedProxyPort, proxyInfo.getPort());
         assertTrue(proxyInfo.getProxyCredentials().isPresent());
-        assertEquals(proxyUsername, proxyInfo.getUsername().orElse(null));
-        assertEquals(proxyPassword, proxyInfo.getPassword().orElse(null));
+        assertEquals(expectedProxyUsername, proxyInfo.getUsername().orElse(null));
+        assertEquals(expectedProxyPassword, proxyInfo.getPassword().orElse(null));
         assertEquals(ntlmDomain, proxyInfo.getNtlmDomain().orElse(null));
         assertEquals(ntlmWorkstation, proxyInfo.getNtlmWorkstation().orElse(StringUtils.EMPTY));
     }
 
-    private void setJenkinsFields(Jenkins jenkins, ProxyConfiguration proxyConfiguration) {
-        try {
-            FieldSetter.setField(jenkins, jenkins.getClass().getField("proxy"), proxyConfiguration);
-            FieldSetter.setField(proxyConfiguration, proxyConfiguration.getClass().getDeclaredField("name"), proxyHost);
-            FieldSetter.setField(proxyConfiguration, proxyConfiguration.getClass().getDeclaredField("port"), proxyPort);
-        } catch (NoSuchFieldException exception) {
-            fail("Jenkins has changed it's API: ", exception);
-        }
-    }
 }

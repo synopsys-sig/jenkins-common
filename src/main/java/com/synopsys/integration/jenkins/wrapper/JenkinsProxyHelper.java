@@ -114,24 +114,22 @@ public class JenkinsProxyHelper {
     }
 
     private boolean shouldNotUseProxy(String url) {
-        try {
-            URL actualURL = new URL(url);
-            return shouldIgnoreHost(actualURL.getHost());
-        } catch (MalformedURLException e) {
-            return true;
-        }
-    }
-
-    private boolean shouldIgnoreHost(String hostToMatch) {
-        if (StringUtils.isBlank(hostToMatch) || ignoredProxyHosts == null || ignoredProxyHosts.isEmpty()) {
+        if (ignoredProxyHosts == null || ignoredProxyHosts.isEmpty()) {
             return false;
         }
 
-        for (Pattern ignoredProxyHostPattern : ignoredProxyHosts) {
-            Matcher m = ignoredProxyHostPattern.matcher(hostToMatch);
-            if (m.matches()) {
-                return true;
+        try {
+            URL actualURL = new URL(url);
+
+            for (Pattern ignoredProxyHostPattern : ignoredProxyHosts) {
+                Matcher m = ignoredProxyHostPattern.matcher(actualURL.getHost());
+                if (m.matches()) {
+                    return true;
+                }
             }
+
+        } catch (MalformedURLException e) {
+            return true;
         }
         return false;
     }
