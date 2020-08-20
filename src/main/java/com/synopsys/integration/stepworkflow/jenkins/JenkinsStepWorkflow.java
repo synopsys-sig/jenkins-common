@@ -26,6 +26,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.http.impl.client.HttpClientBuilder;
+
+import com.google.gson.Gson;
 import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 import com.synopsys.integration.jenkins.wrapper.JenkinsVersionHelper;
 import com.synopsys.integration.phonehome.PhoneHomeClient;
@@ -71,7 +74,9 @@ public abstract class JenkinsStepWorkflow<T> {
 
     protected Optional<PhoneHomeResponse> beginPhoneHome() {
         try {
-            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger);
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            Gson gson = new Gson();
+            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger, httpClientBuilder, gson);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             PhoneHomeService phoneHomeService = PhoneHomeService.createAsynchronousPhoneHomeService(logger, phoneHomeClient, executor);
 

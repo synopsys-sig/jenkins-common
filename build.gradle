@@ -20,7 +20,7 @@ dependencies {
     // These MUST stay in lock step with any $PRODUCT-common you use with this
     // --rotte MAR 2020
     api 'com.synopsys.integration:integration-rest:1.0.5'
-    api 'com.synopsys.integration:phone-home-client:2.0.0'
+    api 'com.synopsys.integration:phone-home-client:3.0.1'
 
     // added by gradle jpi plugin to our plugins
     implementation 'com.google.code.findbugs:annotations:3.0.0'
