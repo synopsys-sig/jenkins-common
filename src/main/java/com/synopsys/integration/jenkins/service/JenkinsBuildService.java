@@ -25,6 +25,7 @@ package com.synopsys.integration.jenkins.service;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.synopsys.integration.jenkins.extensions.ChangeBuildStatusTo;
 import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 
 import hudson.model.AbstractBuild;
@@ -55,6 +56,12 @@ public class JenkinsBuildService {
     public void markBuildUnstable(Exception e) {
         logger.error(e.getMessage(), e);
         build.setResult(Result.UNSTABLE);
+    }
+
+    public void markBuildAs(ChangeBuildStatusTo changeBuildStatusTo) {
+        Result result = changeBuildStatusTo.getResult();
+        logger.alwaysLog("Setting build status to " + result.toString());
+        build.setResult(result);
     }
 
     public Optional<String> getJDKRemoteHomeOrEmpty() throws InterruptedException {

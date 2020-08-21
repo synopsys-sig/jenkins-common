@@ -26,21 +26,27 @@ import com.synopsys.integration.function.ThrowingSupplier;
 import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.Node;
 import hudson.model.TaskListener;
 
 public class JenkinsServicesFactory {
     private final JenkinsIntLogger logger;
+    private final EnvVars envVars;
     protected final Launcher launcher;
+    private final Node node;
     protected final ThrowingSupplier<FilePath, AbortException> validatedWorkspace;
     protected final TaskListener listener;
     private final AbstractBuild<?, ?> build;
 
-    public JenkinsServicesFactory(JenkinsIntLogger logger, AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, TaskListener listener) {
+    public JenkinsServicesFactory(JenkinsIntLogger logger, AbstractBuild<?, ?> build, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, FilePath workspace) {
         this.logger = logger;
+        this.envVars = envVars;
         this.launcher = launcher;
+        this.node = node;
         this.validatedWorkspace = () -> validateWorkspace(workspace);
         this.listener = listener;
         this.build = build;
@@ -55,12 +61,12 @@ public class JenkinsServicesFactory {
     }
 
     public JenkinsConfigService createJenkinsConfigService() {
-        return new JenkinsConfigService();
+        return new JenkinsConfigService(envVars, node, listener);
     }
 
     private FilePath validateWorkspace(FilePath workspace) throws AbortException {
         if (workspace == null) {
-            throw new AbortException("Polaris cannot be executed: The workspace could not be determined.");
+            throw new AbortException("Cannot execute this Synopsys integration: The workspace could not be determined.");
         }
 
         return workspace;

@@ -70,6 +70,10 @@ public class JenkinsRemotingService {
         return call(new OperatingSystemTypeCallable());
     }
 
+    public String getRemoteWorkspacePath() {
+        return workspace.getRemote();
+    }
+
     public static class OperatingSystemTypeCallable extends MasterToSlaveCallable<OperatingSystemType, RuntimeException> {
         private static final long serialVersionUID = 1943720716430585353L;
 
