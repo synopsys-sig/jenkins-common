@@ -23,6 +23,7 @@
 package com.synopsys.integration.jenkins.service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import com.synopsys.integration.util.IntEnvironmentVariables;
@@ -30,6 +31,7 @@ import com.synopsys.integration.util.OperatingSystemType;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -44,6 +46,10 @@ public class JenkinsRemotingService {
         this.launcher = launcher;
         this.workspace = workspace;
         this.listener = listener;
+    }
+
+    public List<String> tokenizeArgumentString(String argumentString) {
+        return Arrays.asList(Util.tokenize(argumentString));
     }
 
     public int launch(IntEnvironmentVariables intEnvironmentVariables, List<String> commandLine) throws IOException, InterruptedException {
@@ -64,6 +70,10 @@ public class JenkinsRemotingService {
         }
 
         return virtualChannel.call(callable);
+    }
+
+    public boolean isRemoteUnix() {
+        return launcher.isUnix();
     }
 
     public OperatingSystemType getRemoteOperatingSystemType() throws IOException, InterruptedException {
