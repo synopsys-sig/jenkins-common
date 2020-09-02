@@ -64,12 +64,6 @@ public class JenkinsProxyHelperTest {
         );
     }
 
-    @Test
-    public void testFromJenkinsNullProxyConfig() {
-        ProxyInfo actual = JenkinsProxyHelper.fromJenkins(JenkinsWrapper.initializeFromJenkinsJVM()).getProxyInfo("www.null-jenkins.com");
-        assertEquals(ProxyInfo.NO_PROXY_INFO, actual);
-    }
-
     @ParameterizedTest
     @MethodSource("noProxyInfo")
     public void testConstructorNoProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
@@ -93,8 +87,8 @@ public class JenkinsProxyHelperTest {
 
     @ParameterizedTest
     @MethodSource({ "noProxyInfo", "noProxyInfoWithNtlmDomain" })
-    public void testFromProxyConfigurationNoProxyInfo(String url, List<Pattern> unusedProxyHosts, String testUserName) {
-        ProxyConfiguration inputProxyConfiguration = createProxyConfiguration(testUserName, null);
+    public void testFromProxyConfigurationNoProxyInfo(String url, List<Pattern> unusedProxyHosts, String testUsername) {
+        ProxyConfiguration inputProxyConfiguration = createProxyConfiguration(testUsername, null);
         ProxyInfo actual = JenkinsProxyHelper.fromProxyConfiguration(inputProxyConfiguration).getProxyInfo(url);
         assertEquals(ProxyInfo.NO_PROXY_INFO, actual);
     }
@@ -122,14 +116,17 @@ public class JenkinsProxyHelperTest {
         return proxyInfoBuilder.build();
     }
 
-    private ProxyConfiguration createProxyConfiguration(String userName, String expectedPassWord) {
-        ProxyConfiguration proxyConfiguration = new ProxyConfiguration(expectedProxyHost, expectedProxyPort, userName, null, hostToExclude);
+    private ProxyConfiguration createProxyConfiguration(String username, String expectedPassword) {
+        ProxyConfiguration proxyConfiguration = new ProxyConfiguration(expectedProxyHost, expectedProxyPort, username, null, hostToExclude);
 
-        if (expectedPassWord == null || expectedPassWord.isEmpty()) {
+        // It involves low level Jenkins encryption in order to inject a password into ProxyConfiguration.
+        // Because of that, use a spy IF a populated expectedPassword is passed in. Otherwise, just use the null.
+        // danam Sep 2020
+        if (expectedPassword == null || expectedPassword.isEmpty()) {
             return proxyConfiguration;
         } else {
             ProxyConfiguration spiedProxyConfiguration = Mockito.spy(proxyConfiguration);
-            Mockito.doReturn(expectedPassWord).when(spiedProxyConfiguration).getPassword();
+            Mockito.when(spiedProxyConfiguration.getPassword()).thenReturn(expectedPassword);
             return spiedProxyConfiguration;
         }
     }

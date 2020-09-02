@@ -94,11 +94,6 @@ public class JenkinsProxyHelper {
         return new JenkinsProxyHelper(proxyConfiguration.name, proxyConfiguration.port, username, proxyConfiguration.getPassword(), proxyConfiguration.getNoProxyHostPatterns(), ntlmDomain, null);
     }
 
-    public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
-        ProxyConfiguration proxyConfig = jenkinsWrapper.getProxyConfiguration().orElse(null);
-        return fromProxyConfiguration(proxyConfig);
-    }
-
     public ProxyInfo getProxyInfo(String url) {
         if (isBlank || shouldNotUseProxy(url)) {
             return ProxyInfo.NO_PROXY_INFO;
