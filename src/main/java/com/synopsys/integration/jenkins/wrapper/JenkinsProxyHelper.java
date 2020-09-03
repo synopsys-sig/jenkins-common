@@ -38,7 +38,8 @@ import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
 import hudson.ProxyConfiguration;
 
 public class JenkinsProxyHelper {
-    private static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
+    public static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
+
     private final boolean isBlank;
 
     private final String proxyHost;
@@ -72,27 +73,25 @@ public class JenkinsProxyHelper {
         this.isBlank = true;
     }
 
-    public static JenkinsProxyHelper fromJenkins(JenkinsWrapper jenkinsWrapper) {
-        ProxyConfiguration proxyConfig = jenkinsWrapper.getProxyConfiguration().orElse(null);
-
-        if (proxyConfig == null) {
+    public static JenkinsProxyHelper fromProxyConfiguration(ProxyConfiguration proxyConfiguration) {
+        if (proxyConfiguration == null) {
             return NO_PROXY;
         }
 
         String username = null;
         String ntlmDomain = null;
-        if (StringUtils.isNotBlank(proxyConfig.getUserName())) {
-            String[] possiblyDomainSlashUsername = proxyConfig.getUserName().split(Pattern.quote("\\"));
+        if (StringUtils.isNotBlank(proxyConfiguration.getUserName())) {
+            String[] possiblyDomainSlashUsername = proxyConfiguration.getUserName().split(Pattern.quote("\\"));
             if (possiblyDomainSlashUsername.length == 1 || possiblyDomainSlashUsername[0].length() == 0) {
                 ntlmDomain = null;
-                username = proxyConfig.getUserName();
+                username = proxyConfiguration.getUserName();
             } else {
                 ntlmDomain = possiblyDomainSlashUsername[0];
                 username = possiblyDomainSlashUsername[1];
             }
         }
 
-        return new JenkinsProxyHelper(proxyConfig.name, proxyConfig.port, username, proxyConfig.getPassword(), proxyConfig.getNoProxyHostPatterns(), ntlmDomain, StringUtils.EMPTY);
+        return new JenkinsProxyHelper(proxyConfiguration.name, proxyConfiguration.port, username, proxyConfiguration.getPassword(), proxyConfiguration.getNoProxyHostPatterns(), ntlmDomain, null);
     }
 
     public ProxyInfo getProxyInfo(String url) {

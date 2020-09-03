@@ -77,7 +77,7 @@ public class JenkinsWrapper {
     }
 
     public JenkinsProxyHelper getProxyHelper() {
-        return JenkinsProxyHelper.fromJenkins(this);
+        return JenkinsProxyHelper.fromProxyConfiguration(getProxyConfiguration().orElse(null));
     }
 
     public SynopsysCredentialsHelper getCredentialsHelper() {
