@@ -110,7 +110,7 @@ public class JenkinsStepWorkflowTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         TaskListener taskListener = Mockito.mock(TaskListener.class);
         Mockito.when(taskListener.getLogger()).thenReturn(new PrintStream(byteArrayOutputStream));
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(taskListener);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToListener(taskListener);
         jenkinsIntLogger.setLogLevel(LogLevel.TRACE);
 
         JenkinsStepWorkflow<String> jenkinsStepWorkflow = new JenkinsStepWorkflowImpl(jenkinsIntLogger, jenkinsVersionHelperMock);

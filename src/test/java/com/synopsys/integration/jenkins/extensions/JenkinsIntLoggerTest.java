@@ -91,7 +91,7 @@ public class JenkinsIntLoggerTest {
         TaskListener taskListener = Mockito.mock(TaskListener.class);
         Mockito.when(taskListener.getLogger()).thenReturn(new PrintStream(byteArrayOutputStream));
 
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(taskListener);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToListener(taskListener);
         jenkinsIntLogger.setLogLevel(LogLevel.OFF);
         jenkinsIntLogger.alwaysLog(textMessage);
 
@@ -105,7 +105,7 @@ public class JenkinsIntLoggerTest {
 
         assertNull(e, "This test requires that e is null.");
 
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         jenkinsIntLogger.alwaysLog(txt);
         assertNull(jenkinsIntLogger.getTaskListener());
@@ -116,7 +116,7 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource({ "txtTestData", "exceptionTestData" })
     public void testJenkinsIntLoggerError(String txt, Throwable e, LogLevel logLevel, String expected) {
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.ERROR) ? expected : "";
 
@@ -137,7 +137,7 @@ public class JenkinsIntLoggerTest {
     public void testJenkinsIntLoggerWarn(String txt, Throwable e, LogLevel logLevel, String expected) {
         assertNull(e, "This test requires that e is null.");
 
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.WARN) ? expected : "";
 
@@ -152,7 +152,7 @@ public class JenkinsIntLoggerTest {
     public void testJenkinsIntLoggerInfo(String txt, Throwable e, LogLevel logLevel, String expected) {
         assertNull(e, "This test requires that e is null.");
 
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.INFO) ? expected : "";
 
@@ -165,7 +165,7 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource({ "txtTestData", "exceptionTestData" })
     public void testJenkinsIntLoggerDebug(String txt, Throwable e, LogLevel logLevel, String expected) {
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.DEBUG) ? expected : "";
 
@@ -182,7 +182,7 @@ public class JenkinsIntLoggerTest {
     @ParameterizedTest
     @MethodSource({ "txtTestData", "exceptionTestData" })
     public void testJenkinsIntLoggerTrace(String txt, Throwable e, LogLevel logLevel, String expected) {
-        JenkinsIntLogger jenkinsIntLogger = new JenkinsIntLogger(null);
+        JenkinsIntLogger jenkinsIntLogger = JenkinsIntLogger.logToStandardOut();
         jenkinsIntLogger.setLogLevel(logLevel);
         expected = jenkinsIntLogger.getLogLevel().isLoggable(LogLevel.TRACE) ? expected : "";
 
