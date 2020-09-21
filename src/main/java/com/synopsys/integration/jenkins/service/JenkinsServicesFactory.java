@@ -35,18 +35,20 @@ import hudson.model.TaskListener;
 import jenkins.scm.RunWithSCM;
 
 public class JenkinsServicesFactory {
-    private final JenkinsIntLogger logger;
-    private final EnvVars envVars;
+    protected final JenkinsIntLogger logger;
+    protected final EnvVars envVars;
     protected final Launcher launcher;
-    private final Node node;
+    protected final Node node;
+    protected final RunWithSCM<?, ?> run;
     protected final ThrowingSupplier<FilePath, AbortException> validatedWorkspace;
     protected final TaskListener listener;
 
-    public JenkinsServicesFactory(JenkinsIntLogger logger, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, FilePath workspace) {
+    public JenkinsServicesFactory(JenkinsIntLogger logger, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, RunWithSCM<?, ?> run, FilePath workspace) {
         this.logger = logger;
         this.envVars = envVars;
         this.launcher = launcher;
         this.node = node;
+        this.run = run;
         this.validatedWorkspace = () -> validateWorkspace(workspace);
         this.listener = listener;
     }
@@ -63,7 +65,7 @@ public class JenkinsServicesFactory {
         return new JenkinsConfigService(envVars, node, listener);
     }
 
-    public JenkinsScmService createJenkinsScmService(RunWithSCM<?, ?> run) {
+    public JenkinsScmService createJenkinsScmService() {
         return new JenkinsScmService(logger, run);
     }
 
