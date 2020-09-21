@@ -32,6 +32,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import jenkins.scm.RunWithSCM;
 
 public class JenkinsServicesFactory {
     private final JenkinsIntLogger logger;
@@ -40,28 +41,30 @@ public class JenkinsServicesFactory {
     private final Node node;
     protected final ThrowingSupplier<FilePath, AbortException> validatedWorkspace;
     protected final TaskListener listener;
-    private final AbstractBuild<?, ?> build;
 
-    public JenkinsServicesFactory(JenkinsIntLogger logger, AbstractBuild<?, ?> build, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, FilePath workspace) {
+    public JenkinsServicesFactory(JenkinsIntLogger logger, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, FilePath workspace) {
         this.logger = logger;
         this.envVars = envVars;
         this.launcher = launcher;
         this.node = node;
         this.validatedWorkspace = () -> validateWorkspace(workspace);
         this.listener = listener;
-        this.build = build;
     }
 
     public JenkinsRemotingService createJenkinsRemotingService() throws AbortException {
         return new JenkinsRemotingService(launcher, validatedWorkspace.get(), listener);
     }
 
-    public JenkinsBuildService createJenkinsBuildService() {
+    public JenkinsBuildService createJenkinsBuildService(AbstractBuild<?, ?> build) {
         return new JenkinsBuildService(logger, build);
     }
 
     public JenkinsConfigService createJenkinsConfigService() {
         return new JenkinsConfigService(envVars, node, listener);
+    }
+
+    public JenkinsScmService createJenkinsScmService(RunWithSCM<?, ?> run) {
+        return new JenkinsScmService(logger, run);
     }
 
     private FilePath validateWorkspace(FilePath workspace) throws AbortException {
