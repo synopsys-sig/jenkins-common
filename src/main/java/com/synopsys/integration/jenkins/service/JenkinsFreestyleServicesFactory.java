@@ -39,7 +39,7 @@ public class JenkinsFreestyleServicesFactory extends JenkinsServicesFactory {
         this.build = build;
     }
 
-    public JenkinsBuildService createJenkinsBuildService(AbstractBuild<?, ?> build) {
+    public JenkinsBuildService createJenkinsBuildService() {
         return new JenkinsBuildService(logger, build);
     }
 

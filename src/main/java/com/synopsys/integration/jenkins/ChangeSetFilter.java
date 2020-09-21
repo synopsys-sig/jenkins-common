@@ -22,7 +22,6 @@
  */
 package com.synopsys.integration.jenkins;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -44,34 +43,42 @@ public class ChangeSetFilter {
     /**
      * Provide a comma-separated list of names to exclude and/or a comma-separated list of names to include. Exclusion rules always win.
      */
-    public ChangeSetFilter(final IntLogger logger, final String toExclude, final String toInclude) {
-        this(logger, createSetFromString(toExclude), createSetFromString(toInclude));
+    public ChangeSetFilter(IntLogger logger) {
+        this(logger, new HashSet<>(), new HashSet<>());
     }
 
-    private ChangeSetFilter(final IntLogger logger, final Set<String> excludedSet, final Set<String> includedSet) {
+    private ChangeSetFilter(IntLogger logger, Set<String> excludedSet, Set<String> includedSet) {
         this.logger = logger;
         this.excludedSet = excludedSet;
         this.includedSet = includedSet;
     }
 
-    public static ChangeSetFilter createAcceptAllFilter(final IntLogger logger) {
-        return new ChangeSetFilter(logger, Collections.emptySet(), Collections.emptySet());
+    public ChangeSetFilter includeMatching(String toInclude) {
+        includedSet.addAll(createSetFromString(toInclude));
+
+        return this;
     }
 
-    private static Set<String> createSetFromString(final String s) {
-        final Set<String> set = new HashSet<>();
-        final StringTokenizer stringTokenizer = new StringTokenizer(StringUtils.trimToEmpty(s), ",");
+    public ChangeSetFilter excludeMatching(String toExclude) {
+        excludedSet.addAll(createSetFromString(toExclude));
+
+        return this;
+    }
+
+    private Set<String> createSetFromString(String s) {
+        Set<String> set = new HashSet<>();
+        StringTokenizer stringTokenizer = new StringTokenizer(StringUtils.trimToEmpty(s), ",");
         while (stringTokenizer.hasMoreTokens()) {
             set.add(StringUtils.trimToEmpty(stringTokenizer.nextToken()));
         }
         return set;
     }
 
-    public boolean shouldInclude(final ChangeLogSet.AffectedFile affectedFile) {
-        final String affectedFilePath = affectedFile.getPath();
-        final String affectedEditType = affectedFile.getEditType().getName();
+    public boolean shouldInclude(ChangeLogSet.AffectedFile affectedFile) {
+        String affectedFilePath = affectedFile.getPath();
+        String affectedEditType = affectedFile.getEditType().getName();
 
-        final boolean shouldInclude = shouldInclude(affectedFilePath);
+        boolean shouldInclude = shouldInclude(affectedFilePath);
         if (shouldInclude) {
             logger.debug(String.format("Type: %s File Path: %s Included in change set", affectedEditType, affectedFilePath));
         } else {
@@ -81,19 +88,19 @@ public class ChangeSetFilter {
         return shouldInclude;
     }
 
-    private boolean shouldInclude(final String filePath) {
+    private boolean shouldInclude(String filePath) {
         // ChangeLogSet.AffectedFile getPath is normalized to use the / separator
-        final String fileName;
+        String fileName;
         if (filePath.contains("/")) {
             fileName = StringUtils.substringAfter(filePath, "/");
         } else {
             fileName = filePath;
         }
 
-        final Predicate<String> caseInsensitiveWildcardMatch = pattern -> FilenameUtils.wildcardMatch(fileName, pattern, IOCase.INSENSITIVE);
+        Predicate<String> caseInsensitiveWildcardMatch = pattern -> FilenameUtils.wildcardMatch(fileName, pattern, IOCase.INSENSITIVE);
 
-        final boolean excluded = excludedSet.stream().anyMatch(caseInsensitiveWildcardMatch);
-        final boolean included = includedSet.isEmpty() || includedSet.stream().anyMatch(caseInsensitiveWildcardMatch);
+        boolean excluded = excludedSet.stream().anyMatch(caseInsensitiveWildcardMatch);
+        boolean included = includedSet.isEmpty() || includedSet.stream().anyMatch(caseInsensitiveWildcardMatch);
 
         return included && !excluded;
     }

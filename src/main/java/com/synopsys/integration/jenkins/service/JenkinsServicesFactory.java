@@ -29,7 +29,6 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import jenkins.scm.RunWithSCM;
@@ -55,10 +54,6 @@ public class JenkinsServicesFactory {
 
     public JenkinsRemotingService createJenkinsRemotingService() throws AbortException {
         return new JenkinsRemotingService(launcher, validatedWorkspace.get(), listener);
-    }
-
-    public JenkinsBuildService createJenkinsBuildService(AbstractBuild<?, ?> build) {
-        return new JenkinsBuildService(logger, build);
     }
 
     public JenkinsConfigService createJenkinsConfigService() {

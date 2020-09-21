@@ -14,65 +14,46 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.EditType;
 
 public class ChangeSetFilterTest {
+    private final String validPath = "valid_path";
+    private final String validPathWithSlash = "with_slash/valid_path";
+    private final String invalidPath = "invalid_path";
 
-    String validPath = "valid_path";
-    String validPathWithSlash = "with_slash/valid_path";
-    String invalidPath = "invalid_path";
-    String dummyPath = "dummy_path";
-
-    EditType editType = new EditType("EditType-Name", "EditType-Description");
-    IntLogger intLogger = new PrintStreamIntLogger(System.out, LogLevel.INFO);
-    ChangeLogSet.AffectedFile mockAffectedFile = createAffectedFile(validPath, editType);
-    ChangeLogSet.AffectedFile mockAffectedFileWithSlash = createAffectedFile(validPathWithSlash, editType);
+    private final EditType editType = new EditType("EditType-Name", "EditType-Description");
+    private final IntLogger intLogger = new PrintStreamIntLogger(System.out, LogLevel.INFO);
+    private final ChangeLogSet.AffectedFile mockAffectedFile = createAffectedFile(validPath, editType);
+    private final ChangeLogSet.AffectedFile mockAffectedFileWithSlash = createAffectedFile(validPathWithSlash, editType);
 
     @Test
-    public void testShouldIncludeTrue() {
-        assertTrue(new ChangeSetFilter(intLogger, "", "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, "", null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, "", validPath).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, invalidPath, "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, invalidPath, null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, invalidPath, validPath).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, null, "").shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, null, null).shouldInclude(mockAffectedFile));
-        assertTrue(new ChangeSetFilter(intLogger, null, validPath).shouldInclude(mockAffectedFile));
+    public void testShouldInclude() {
+        assertTrue(new ChangeSetFilter(intLogger).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).includeMatching("").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).includeMatching(null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).includeMatching(validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching("").includeMatching("").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching("").includeMatching(null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching("").includeMatching(validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(invalidPath).includeMatching("").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(invalidPath).includeMatching(null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(invalidPath).includeMatching(validPath).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(null).includeMatching("").shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(null).includeMatching(null).shouldInclude(mockAffectedFile));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(null).includeMatching(validPath).shouldInclude(mockAffectedFile));
 
-        assertTrue(new ChangeSetFilter(intLogger, null, validPath).shouldInclude(mockAffectedFileWithSlash));
+        assertTrue(new ChangeSetFilter(intLogger).excludeMatching(null).includeMatching(validPath).shouldInclude(mockAffectedFileWithSlash));
     }
 
     @Test
-    public void testShouldIncludeFalse() {
-        assertFalse(new ChangeSetFilter(intLogger, "", invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, invalidPath, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, null, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, validPath, "").shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, validPath, invalidPath).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, validPath, null).shouldInclude(mockAffectedFile));
-        assertFalse(new ChangeSetFilter(intLogger, validPath, validPath).shouldInclude(mockAffectedFile));
+    public void testShouldNotInclude() {
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching("").includeMatching(invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(invalidPath).includeMatching(invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(null).includeMatching(invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).includeMatching("").shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).includeMatching(invalidPath).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).includeMatching(null).shouldInclude(mockAffectedFile));
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).includeMatching(validPath).shouldInclude(mockAffectedFile));
 
-        assertFalse(new ChangeSetFilter(intLogger, validPath, validPath).shouldInclude(mockAffectedFileWithSlash));
-    }
-
-    @Test
-    public void testSuccessfulCreateWithPopulatedFilters() {
-        new ChangeSetFilter(intLogger, dummyPath, dummyPath);
-    }
-
-    @Test
-    public void testSuccessfulCreateWithEmptyFilters() {
-        new ChangeSetFilter(intLogger, "", "");
-    }
-
-    @Test
-    public void testSuccessfulCreateWithNullFilters() {
-        new ChangeSetFilter(intLogger, null, dummyPath);
-        new ChangeSetFilter(intLogger, dummyPath, null);
-        new ChangeSetFilter(intLogger, null, null);
-    }
-
-    @Test
-    public void testSuccessfulCreateWithAcceptAllFilter() {
-        ChangeSetFilter.createAcceptAllFilter(null);
+        assertFalse(new ChangeSetFilter(intLogger).excludeMatching(validPath).includeMatching(validPath).shouldInclude(mockAffectedFileWithSlash));
     }
 
     private static ChangeLogSet.AffectedFile createAffectedFile(String path, EditType editType) {

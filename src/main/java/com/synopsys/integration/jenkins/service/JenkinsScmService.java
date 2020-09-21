@@ -47,6 +47,10 @@ public class JenkinsScmService {
         this.build = build;
     }
 
+    public ChangeSetFilter newChangeSetFilter() {
+        return new ChangeSetFilter(logger);
+    }
+
     public List<String> getFilePathsFromChangeSet(ChangeSetFilter changeSetFilter) {
         return build.getChangeSets().stream()
                    .filter(changeLogSet -> !changeLogSet.isEmptySet())
