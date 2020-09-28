@@ -29,29 +29,30 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper;
 
 import com.synopsys.integration.jenkins.ChangeSetFilter;
 import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 import com.synopsys.integration.log.LogLevel;
 import com.synopsys.integration.rest.RestConstants;
 
+import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
-import jenkins.scm.RunWithSCM;
 
 public class JenkinsScmService {
     private final JenkinsIntLogger logger;
-    private final RunWithSCM<?, ?> build;
+    private final RunWrapper build;
 
-    public JenkinsScmService(JenkinsIntLogger logger, RunWithSCM<?, ?> build) {
+    public JenkinsScmService(JenkinsIntLogger logger, Run<?, ?> build) {
         this.logger = logger;
-        this.build = build;
+        this.build = new RunWrapper(build, true);
     }
 
     public ChangeSetFilter newChangeSetFilter() {
         return new ChangeSetFilter(logger);
     }
 
-    public List<String> getFilePathsFromChangeSet(ChangeSetFilter changeSetFilter) {
+    public List<String> getFilePathsFromChangeSet(ChangeSetFilter changeSetFilter) throws Exception {
         return build.getChangeSets().stream()
                    .filter(changeLogSet -> !changeLogSet.isEmptySet())
                    .flatMap(this::toEntries)

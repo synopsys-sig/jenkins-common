@@ -30,19 +30,19 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Node;
+import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.scm.RunWithSCM;
 
 public class JenkinsServicesFactory {
     protected final JenkinsIntLogger logger;
     protected final EnvVars envVars;
     protected final Launcher launcher;
     protected final Node node;
-    protected final RunWithSCM<?, ?> run;
+    protected final Run<?, ?> run;
     protected final ThrowingSupplier<FilePath, AbortException> validatedWorkspace;
     protected final TaskListener listener;
 
-    public JenkinsServicesFactory(JenkinsIntLogger logger, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, RunWithSCM<?, ?> run, FilePath workspace) {
+    public JenkinsServicesFactory(JenkinsIntLogger logger, EnvVars envVars, Launcher launcher, TaskListener listener, Node node, Run<?, ?> run, FilePath workspace) {
         this.logger = logger;
         this.envVars = envVars;
         this.launcher = launcher;
