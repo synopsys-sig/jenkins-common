@@ -25,6 +25,7 @@ package com.synopsys.integration.jenkins.service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.synopsys.integration.util.IntEnvironmentVariables;
 import com.synopsys.integration.util.OperatingSystemType;
@@ -50,6 +51,12 @@ public class JenkinsRemotingService {
 
     public List<String> tokenizeArgumentString(String argumentString) {
         return Arrays.asList(Util.tokenize(argumentString));
+    }
+
+    public List<String> resolveEnvironmentVariables(IntEnvironmentVariables intEnvironmentVariables, List<String> argumentList) {
+        return argumentList.stream()
+                   .map(argument -> Util.replaceMacro(argument, intEnvironmentVariables.getVariables()))
+                   .collect(Collectors.toList());
     }
 
     public int launch(IntEnvironmentVariables intEnvironmentVariables, List<String> commandLine) throws IOException, InterruptedException {
