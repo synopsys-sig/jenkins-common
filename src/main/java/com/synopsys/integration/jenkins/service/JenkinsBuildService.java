@@ -49,12 +49,12 @@ public class JenkinsBuildService {
     }
 
     public void markBuildFailed(Exception e) {
-        logger.error(e.getMessage(), e);
+        logger.error(e);
         build.setResult(Result.FAILURE);
     }
 
     public void markBuildUnstable(Exception e) {
-        logger.error(e.getMessage(), e);
+        logger.error(e);
         build.setResult(Result.UNSTABLE);
     }
 
