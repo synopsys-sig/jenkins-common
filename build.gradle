@@ -1,6 +1,14 @@
 buildscript {
     apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
     apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+//DANArepositories {
+//DANAmavenLocal()
+//DANAmavenCentral()
+//DANAmaven { url 'https://plugins.gradle.org/m2/' }
+//DANA}
+
+//DANAdependencies { classpath "com.synopsys.integration:common-gradle-plugin:3.13.99-SNAPSHOT" }
+
 }
 
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
@@ -41,4 +49,29 @@ dependencies {
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.0'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-support:2.9@jar'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-support:2.9'
+}
+
+//DANAjacocoTestReport {
+	//DANAdependsOn test
+  //DANAreports {
+      //DANAxml.enabled = true
+      //DANAhtml.enabled = true
+  //DANA}
+//DANA}
+
+//DANAjacoco {
+	//DANAtoolVersion = "0.8.5"
+	//DANAreportsDir = file("$buildDir/jacoco")
+//DANA}
+
+//testAll {
+	//finalizedBy jacocoTestReport
+//}
+
+//test {
+	//finalizedBy jacocoTestReport
+//}
+
+jacoco {
+  toolVersion = "0.8.6"
 }
