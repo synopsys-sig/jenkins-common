@@ -1,6 +1,7 @@
 buildscript {
-    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
-    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+		apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
+
+		dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.10.1-SNAPSHOT" }
 }
 
 project.ext.moduleName = 'com.synopsys.integration.jenkins-common'
