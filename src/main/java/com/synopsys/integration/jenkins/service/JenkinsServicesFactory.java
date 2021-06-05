@@ -17,6 +17,7 @@ import hudson.Launcher;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import jenkins.tasks.SimpleBuildWrapper;
 
 public class JenkinsServicesFactory {
     protected final JenkinsIntLogger logger;
@@ -45,8 +46,13 @@ public class JenkinsServicesFactory {
         return new JenkinsConfigService(envVars, node, listener);
     }
 
-    public JenkinsScmService createJenkinsScmService() {
-        return new JenkinsScmService(logger, run);
+    public JenkinsRunService createJenkinsRunService() {
+        return new JenkinsRunService(logger, run);
+    }
+
+    // This method only currently exists for consistency, but as additional capabilities are added to the WrapperContextService it could make use of the data the JenkinsServicesFactory has available to it. --rotte JUN 2021
+    public JenkinsWrapperContextService createJenkinsWrapperContextService(SimpleBuildWrapper.Context context) {
+        return new JenkinsWrapperContextService(context);
     }
 
     private FilePath validateWorkspace(FilePath workspace) throws AbortException {

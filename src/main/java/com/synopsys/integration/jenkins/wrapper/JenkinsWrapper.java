@@ -7,8 +7,6 @@
  */
 package com.synopsys.integration.jenkins.wrapper;
 
-import static hudson.model.Items.XSTREAM;
-
 import java.util.Collections;
 import java.util.Optional;
 
@@ -22,8 +20,7 @@ import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 
 public class JenkinsWrapper {
-
-    private Jenkins jenkins;
+    private final Jenkins jenkins;
 
     public JenkinsWrapper(Jenkins jenkins) {
         this.jenkins = jenkins;
@@ -50,11 +47,6 @@ public class JenkinsWrapper {
     protected Optional<ProxyConfiguration> getProxyConfiguration() {
         return Optional.ofNullable(jenkins)
                    .map(instance -> instance.proxy);
-    }
-
-    public void migrateFieldFrom(String oldName, Class clazz, String newName) {
-        XSTREAM.aliasField(oldName, clazz, newName);
-        XSTREAM.aliasField(newName, clazz, newName);
     }
 
     public JenkinsVersionHelper getVersionHelper() {

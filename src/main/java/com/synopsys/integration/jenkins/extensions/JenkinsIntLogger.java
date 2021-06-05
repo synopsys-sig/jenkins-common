@@ -33,7 +33,7 @@ public class JenkinsIntLogger extends IntLogger implements Serializable {
         return new JenkinsIntLogger(null);
     }
 
-    private JenkinsIntLogger(TaskListener jenkinsTaskListener) {
+    protected JenkinsIntLogger(TaskListener jenkinsTaskListener) {
         this.jenkinsTaskListener = jenkinsTaskListener;
     }
 

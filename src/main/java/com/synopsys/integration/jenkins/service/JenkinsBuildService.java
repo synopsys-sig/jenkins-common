@@ -13,8 +13,10 @@ import java.util.Optional;
 import com.synopsys.integration.jenkins.extensions.ChangeBuildStatusTo;
 import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.Executor;
 import hudson.model.JDK;
 import hudson.model.Result;
@@ -77,6 +79,24 @@ public class JenkinsBuildService {
             markBuildAborted();
         } else {
             build.setResult(executor.abortResult());
+        }
+    }
+
+    public AbstractBuild getBuild() {
+        return build;
+    }
+
+    public void addAction(Action a) {
+        build.addAction(a);
+    }
+
+    public String getWorkspaceOrProjectWorkspace() {
+        FilePath buildWorkspace = build.getWorkspace();
+
+        if (buildWorkspace != null) {
+            return buildWorkspace.getRemote();
+        } else {
+            return build.getProject().getCustomWorkspace();
         }
     }
 

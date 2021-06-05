@@ -1,10 +1,3 @@
-/*
- * jenkins-common
- *
- * Copyright (c) 2021 Synopsys, Inc.
- *
- * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
- */
 package com.synopsys.integration.jenkins.service;
 
 import java.util.Date;
@@ -21,16 +14,28 @@ import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
 import com.synopsys.integration.log.LogLevel;
 import com.synopsys.integration.rest.RestConstants;
 
+import hudson.model.Action;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 
-public class JenkinsScmService {
+public class JenkinsRunService {
     private final JenkinsIntLogger logger;
-    private final RunWrapper build;
+    private final Run<?, ?> run;
+    private final RunWrapper runWrapper;
 
-    public JenkinsScmService(JenkinsIntLogger logger, Run<?, ?> build) {
+    public JenkinsRunService(JenkinsIntLogger logger, Run<?, ?> run) {
         this.logger = logger;
-        this.build = new RunWrapper(build, true);
+        this.run = run;
+        this.runWrapper = new RunWrapper(run, true);
+
+    }
+
+    public Run getRun() {
+        return run;
+    }
+
+    public void addAction(Action a) {
+        run.addAction(a);
     }
 
     public ChangeSetFilter newChangeSetFilter() {
@@ -38,7 +43,7 @@ public class JenkinsScmService {
     }
 
     public List<String> getFilePathsFromChangeSet(ChangeSetFilter changeSetFilter) throws Exception {
-        return build.getChangeSets().stream()
+        return runWrapper.getChangeSets().stream()
                    .filter(changeLogSet -> !changeLogSet.isEmptySet())
                    .flatMap(this::toEntries)
                    .peek(this::logEntry)
@@ -64,4 +69,5 @@ public class JenkinsScmService {
         }
 
     }
+
 }
