@@ -41,4 +41,6 @@ dependencies {
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.0'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-support:2.9@jar'
     implementation 'org.jenkins-ci.plugins.workflow:workflow-support:2.9'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.34@jar'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.34'
 }
