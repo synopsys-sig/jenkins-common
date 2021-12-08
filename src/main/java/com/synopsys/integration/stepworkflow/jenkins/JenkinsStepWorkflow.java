@@ -19,6 +19,7 @@ import com.synopsys.integration.jenkins.wrapper.JenkinsVersionHelper;
 import com.synopsys.integration.phonehome.PhoneHomeClient;
 import com.synopsys.integration.phonehome.PhoneHomeResponse;
 import com.synopsys.integration.phonehome.PhoneHomeService;
+import com.synopsys.integration.phonehome.google.analytics.GoogleAnalyticsConstants;
 import com.synopsys.integration.phonehome.request.PhoneHomeRequestBody;
 import com.synopsys.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
 import com.synopsys.integration.stepworkflow.StepWorkflow;
@@ -51,7 +52,7 @@ public abstract class JenkinsStepWorkflow<T> {
         Optional<PhoneHomeResponse> phoneHomeResponse = beginPhoneHome();
         try {
             return this.buildWorkflow()
-                       .run();
+                .run();
         } finally {
             phoneHomeResponse.ifPresent(PhoneHomeResponse::getImmediateResult);
         }
@@ -61,7 +62,7 @@ public abstract class JenkinsStepWorkflow<T> {
         try {
             HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
             Gson gson = new Gson();
-            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger, httpClientBuilder, gson);
+            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger, httpClientBuilder, gson, GoogleAnalyticsConstants.PRODUCTION_INTEGRATIONS_TRACKING_ID);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             PhoneHomeService phoneHomeService = PhoneHomeService.createAsynchronousPhoneHomeService(logger, phoneHomeClient, executor);
 
