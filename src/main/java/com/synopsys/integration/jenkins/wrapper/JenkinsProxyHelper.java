@@ -21,6 +21,7 @@ import com.synopsys.integration.rest.proxy.ProxyInfo;
 import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
 
 import hudson.ProxyConfiguration;
+import hudson.util.Secret;
 
 public class JenkinsProxyHelper {
     public static final JenkinsProxyHelper NO_PROXY = new JenkinsProxyHelper();
@@ -35,8 +36,10 @@ public class JenkinsProxyHelper {
     private final String ntlmDomain;
     private final String ntlmWorkstation;
 
-    public JenkinsProxyHelper(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, List<Pattern> ignoredProxyHosts, String ntlmDomain,
-        String ntlmWorkstation) {
+    public JenkinsProxyHelper(
+        String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, List<Pattern> ignoredProxyHosts, String ntlmDomain,
+        String ntlmWorkstation
+    ) {
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
         this.proxyUsername = proxyUsername;
@@ -76,7 +79,15 @@ public class JenkinsProxyHelper {
             }
         }
 
-        return new JenkinsProxyHelper(proxyConfiguration.name, proxyConfiguration.port, username, proxyConfiguration.getPassword(), proxyConfiguration.getNoProxyHostPatterns(), ntlmDomain, null);
+        return new JenkinsProxyHelper(
+            proxyConfiguration.name,
+            proxyConfiguration.port,
+            username,
+            Secret.toString(proxyConfiguration.getSecretPassword()),
+            proxyConfiguration.getNoProxyHostPatterns(),
+            ntlmDomain,
+            null
+        );
     }
 
     public ProxyInfo getProxyInfo(String url) {

@@ -20,6 +20,7 @@ import com.synopsys.integration.rest.proxy.ProxyInfo;
 import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
 
 import hudson.ProxyConfiguration;
+import hudson.util.Secret;
 
 public class JenkinsProxyHelperTest {
     final static String expectedNtlmDomain = "ntlmDomain";
@@ -68,7 +69,15 @@ public class JenkinsProxyHelperTest {
     @ParameterizedTest
     @MethodSource("noProxyInfo")
     public void testConstructorNoProxyInfo(String url, List<Pattern> ignoredProxyHosts, String testNtlmDomain) {
-        ProxyInfo actual = new JenkinsProxyHelper(expectedProxyHost, expectedProxyPort, expectedProxyUsername, expectedProxyPassword, ignoredProxyHosts, testNtlmDomain, expectedNtlmWorkstation).getProxyInfo(url);
+        ProxyInfo actual = new JenkinsProxyHelper(
+            expectedProxyHost,
+            expectedProxyPort,
+            expectedProxyUsername,
+            expectedProxyPassword,
+            ignoredProxyHosts,
+            testNtlmDomain,
+            expectedNtlmWorkstation
+        ).getProxyInfo(url);
         assertEquals(ProxyInfo.NO_PROXY_INFO, actual);
     }
 
@@ -76,7 +85,15 @@ public class JenkinsProxyHelperTest {
     @MethodSource({ "validProxyInfoInputTestData" })
     public void testConstructorValidProxyInfo(List<Pattern> ignoredProxyHosts, String expectedNtlmDomain, String unusedProxyUsername) {
         ProxyInfo expected = createExpectedProxyInfo(expectedNtlmDomain, expectedNtlmWorkstation);
-        ProxyInfo actual = new JenkinsProxyHelper(expectedProxyHost, expectedProxyPort, expectedProxyUsername, expectedProxyPassword, ignoredProxyHosts, expectedNtlmDomain, expectedNtlmWorkstation).getProxyInfo(hostToInclude);
+        ProxyInfo actual = new JenkinsProxyHelper(
+            expectedProxyHost,
+            expectedProxyPort,
+            expectedProxyUsername,
+            expectedProxyPassword,
+            ignoredProxyHosts,
+            expectedNtlmDomain,
+            expectedNtlmWorkstation
+        ).getProxyInfo(hostToInclude);
         assertEquals(expected, actual);
     }
 
@@ -97,7 +114,7 @@ public class JenkinsProxyHelperTest {
     @ParameterizedTest
     @MethodSource({ "validProxyInfoInputTestData" })
     public void testFromProxyConfigurationValidProxyConfig(List<Pattern> unusedProxyHosts, String expectedNtlmDomain, String expectedProxyUsername) {
-        ProxyInfo expected = createExpectedProxyInfo(expectedNtlmDomain,null);
+        ProxyInfo expected = createExpectedProxyInfo(expectedNtlmDomain, null);
         ProxyConfiguration inputProxyConfiguration = createProxyConfiguration(expectedProxyUsername, expectedProxyPassword);
         ProxyInfo actual = JenkinsProxyHelper.fromProxyConfiguration(inputProxyConfiguration).getProxyInfo(hostToInclude);
         assertEquals(expected, actual);
@@ -124,9 +141,8 @@ public class JenkinsProxyHelperTest {
         // Because of that, use a spy to return the expectedPassword.
         // danam Sep 2020
         ProxyConfiguration spiedProxyConfiguration = Mockito.spy(proxyConfiguration);
-        Mockito.when(spiedProxyConfiguration.getPassword()).thenReturn(expectedPassword);
+        Mockito.when(spiedProxyConfiguration.getSecretPassword()).thenReturn(Secret.fromString(expectedPassword));
         return spiedProxyConfiguration;
-
     }
 
 }
