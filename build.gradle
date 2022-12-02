@@ -38,18 +38,13 @@ dependencies {
     // core version bump
     implementation 'org.jenkins-ci.main:jenkins-core:2.334'
 
-    //implementation 'org.jenkins-ci.plugins:credentials:2.3.12@jar'
-    //implementation 'org.jenkins-ci.plugins:credentials:2.3.12'
-    //implementation 'org.jenkins-ci.plugins:plain-credentials:1.7@jar'
-    //implementation 'org.jenkins-ci.plugins:plain-credentials:1.7'
-
+    // the following versions are compatible/usable in jenkins core 2.334 and later apparently.
     implementation 'org.jenkins-ci.plugins:credentials:1087.1089.v2f1b_9a_b_040e4@jar'
-    implementation 'org.jenkins-ci.plugins:plain-credentials:139.ved2b_9cf7587b@jar'
     implementation 'org.jenkins-ci.plugins:credentials:1087.1089.v2f1b_9a_b_040'
+    implementation 'org.jenkins-ci.plugins:plain-credentials:139.ved2b_9cf7587b@jar'
     implementation 'org.jenkins-ci.plugins:plain-credentials:139.ved2b_9cf7587b'
-
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:3.5@jar'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:3.5'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.40@jar'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.40'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:815.vd60466279fc8@jar'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:815.vd60466279fc8'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:1143.v2d42f1e9dea_5@jar'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:1143.v2d42f1e9dea_5'
 }
