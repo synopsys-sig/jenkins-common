@@ -34,13 +34,13 @@ dependencies {
     // or Jenkins plugin versions in Jenkins plugins that depend on this library.
     // Jenkins plugins that depend on this library should therefore version those dependencies compatibly with the versions below:
     // --rotte DEC 2019
-    implementation 'org.jenkins-ci.main:jenkins-core:2.248'
-    implementation 'org.jenkins-ci.plugins:credentials:2.3.12@jar'
-    implementation 'org.jenkins-ci.plugins:credentials:2.3.12'
-    implementation 'org.jenkins-ci.plugins:plain-credentials:1.7@jar'
-    implementation 'org.jenkins-ci.plugins:plain-credentials:1.7'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:3.5@jar'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:3.5'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.40@jar'
-    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:2.40'
+    implementation 'org.jenkins-ci.main:jenkins-core:2.359'
+    implementation 'org.jenkins-ci.plugins:credentials:1139.veb_9579fca_33b_@jar'
+    implementation 'org.jenkins-ci.plugins:credentials:1139.veb_9579fca_33b_'
+    implementation 'org.jenkins-ci.plugins:plain-credentials:1.8@jar'
+    implementation 'org.jenkins-ci.plugins:plain-credentials:1.8'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:827.v7ef666c4d65c@jar'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-support:827.v7ef666c4d65c'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:1188.v0016b_4f29881@jar'
+    implementation 'org.jenkins-ci.plugins.workflow:workflow-api:1188.v0016b_4f29881'
 }
