@@ -34,7 +34,14 @@ dependencies {
     // or Jenkins plugin versions in Jenkins plugins that depend on this library.
     // Jenkins plugins that depend on this library should therefore version those dependencies compatibly with the versions below:
     // --rotte DEC 2019
-    implementation 'org.jenkins-ci.main:jenkins-core:2.359'
+    implementation('org.jenkins-ci.main:jenkins-core:2.359') {
+        // spring-security-web pulls in 'core' and 'crypto'.. we now replace that 5.7.2 with 5.7.5
+        // this still won't filter thru into the plugin however, which is unfortunate but this
+        // will at least also clean up annotation which depends on jenkins-common.
+        exclude group: 'org.springframework.security', module: 'spring-security-web'
+    }
+    implementation 'org.springframework.security:spring-security-web:5.7.5'
+
     implementation 'org.jenkins-ci.plugins:credentials:1139.veb_9579fca_33b_@jar'
     implementation 'org.jenkins-ci.plugins:credentials:1139.veb_9579fca_33b_'
     implementation 'org.jenkins-ci.plugins:plain-credentials:1.8@jar'
