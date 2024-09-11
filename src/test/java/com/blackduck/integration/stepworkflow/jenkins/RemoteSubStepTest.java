@@ -1,6 +1,6 @@
 package com.blackduck.integration.stepworkflow.jenkins;
 
-import com.synopsys.integration.stepworkflow.SubStepResponse;
+import com.blackduck.integration.stepworkflow.SubStepResponse;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,7 +11,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RemoteSubStepTest {
 

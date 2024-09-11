@@ -1,15 +1,15 @@
 package com.blackduck.integration.stepworkflow.jenkins;
 
-import com.synopsys.integration.jenkins.extensions.JenkinsIntLogger;
-import com.synopsys.integration.jenkins.wrapper.JenkinsVersionHelper;
+import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
+import com.blackduck.integration.jenkins.wrapper.JenkinsVersionHelper;
 import com.synopsys.integration.log.LogLevel;
 import com.synopsys.integration.phonehome.PhoneHomeResponse;
 import com.synopsys.integration.phonehome.UniquePhoneHomeProduct;
 import com.synopsys.integration.phonehome.request.PhoneHomeRequestBody;
 import com.synopsys.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
-import com.synopsys.integration.stepworkflow.StepWorkflow;
-import com.synopsys.integration.stepworkflow.StepWorkflowResponse;
-import com.synopsys.integration.stepworkflow.SubStep;
+import com.blackduck.integration.stepworkflow.StepWorkflow;
+import com.blackduck.integration.stepworkflow.StepWorkflowResponse;
+import com.blackduck.integration.stepworkflow.SubStep;
 import com.synopsys.integration.util.NameVersion;
 import hudson.AbortException;
 import hudson.model.TaskListener;
