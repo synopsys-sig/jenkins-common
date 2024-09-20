@@ -8,9 +8,9 @@
 package com.blackduck.integration.stepworkflow;
 
 import com.blackduck.integration.function.ThrowingExecutor;
-import com.synopsys.integration.function.ThrowingConsumer;
-import com.synopsys.integration.function.ThrowingFunction;
-import com.synopsys.integration.function.ThrowingSupplier;
+import com.blackduck.integration.function.ThrowingConsumer;
+import com.blackduck.integration.function.ThrowingFunction;
+import com.blackduck.integration.function.ThrowingSupplier;
 
 @FunctionalInterface
 public interface SubStep<T, R> {

@@ -7,20 +7,30 @@
  */
 package com.blackduck.integration.stepworkflow.jenkins;
 
+import com.blackduck.integration.exception.IntegrationException;
 import com.blackduck.integration.jenkins.wrapper.JenkinsVersionHelper;
+import com.blackduck.integration.log.SilentIntLogger;
+import com.blackduck.integration.rest.HttpMethod;
+import com.blackduck.integration.rest.client.IntHttpClient;
+import com.blackduck.integration.rest.response.Response;
 import com.blackduck.integration.stepworkflow.StepWorkflow;
 import com.blackduck.integration.stepworkflow.StepWorkflowResponse;
 import com.google.gson.Gson;
 import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
-import com.synopsys.integration.phonehome.PhoneHomeClient;
-import com.synopsys.integration.phonehome.PhoneHomeResponse;
-import com.synopsys.integration.phonehome.PhoneHomeService;
-import com.synopsys.integration.phonehome.google.analytics.GoogleAnalyticsConstants;
-import com.synopsys.integration.phonehome.request.PhoneHomeRequestBody;
-import com.synopsys.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
+import com.blackduck.integration.phonehome.PhoneHomeClient;
+import com.blackduck.integration.phonehome.PhoneHomeResponse;
+import com.blackduck.integration.phonehome.PhoneHomeService;
+import com.blackduck.integration.phonehome.google.analytics.GoogleAnalyticsConstants;
+import com.blackduck.integration.phonehome.request.PhoneHomeRequestBody;
+import com.blackduck.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
+import com.blackduck.integration.rest.proxy.ProxyInfo;
+import com.google.gson.JsonSyntaxException;
 import hudson.AbortException;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,10 +38,22 @@ import java.util.concurrent.Executors;
 public abstract class JenkinsStepWorkflow<T> {
     protected final JenkinsIntLogger logger;
     protected final JenkinsVersionHelper jenkinsVersionHelper;
+    private final static int TIMEOUT_IN_SECONDS = 20;
+    private final Gson gson;
+    private final IntHttpClient intHttpClient;
+    private final static String CREDENTIALS_PATH = "https://static-content.app.blackduck.com/detect/analytics/creds.json";
 
     public JenkinsStepWorkflow(JenkinsIntLogger logger, JenkinsVersionHelper jenkinsVersionHelper) {
         this.logger = logger;
         this.jenkinsVersionHelper = jenkinsVersionHelper;
+        this.gson = new Gson();
+        this.intHttpClient = new IntHttpClient(
+                new SilentIntLogger(),
+                gson,
+                TIMEOUT_IN_SECONDS,
+                true,
+                ProxyInfo.NO_PROXY_INFO
+        );
     }
 
     protected abstract PhoneHomeRequestBodyBuilder createPhoneHomeBuilder();
@@ -59,8 +81,8 @@ public abstract class JenkinsStepWorkflow<T> {
     protected Optional<PhoneHomeResponse> beginPhoneHome() {
         try {
             HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-            Gson gson = new Gson();
-            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger, httpClientBuilder, gson, GoogleAnalyticsConstants.PRODUCTION_INTEGRATIONS_TRACKING_ID);
+            PhoneHomeCredentials phoneHomeCredentials = getGa4Credentials();
+            PhoneHomeClient phoneHomeClient = new PhoneHomeClient(logger, httpClientBuilder, gson, phoneHomeCredentials.getApiSecret(), phoneHomeCredentials.getMeasurementId());
             ExecutorService executor = Executors.newSingleThreadExecutor();
             PhoneHomeService phoneHomeService = PhoneHomeService.createAsynchronousPhoneHomeService(logger, phoneHomeClient, executor);
 
@@ -78,6 +100,17 @@ public abstract class JenkinsStepWorkflow<T> {
         jenkinsVersionHelper.getJenkinsVersion()
             .ifPresent(jenkinsVersionString -> phoneHomeRequestBodyBuilder.addToMetaData("jenkins.version", jenkinsVersionString));
         return phoneHomeRequestBodyBuilder.build();
+    }
+
+    protected PhoneHomeCredentials getGa4Credentials() throws IOException, InterruptedException, JsonSyntaxException, IntegrationException {
+        String fileUrl = CREDENTIALS_PATH;
+        logger.debug("Downloading phone home credentials.");
+        RequestBuilder createRequestBuilder = intHttpClient.createRequestBuilder(HttpMethod.GET);
+        HttpUriRequest request = createRequestBuilder
+                .setUri(fileUrl)
+                .build();
+        Response response = intHttpClient.execute(request);
+        return gson.fromJson(response.getContentString(), PhoneHomeCredentials.class);
     }
 
 }

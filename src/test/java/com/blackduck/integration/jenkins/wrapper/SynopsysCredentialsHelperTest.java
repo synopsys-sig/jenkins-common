@@ -40,7 +40,7 @@ public class SynopsysCredentialsHelperTest {
         Mockito.doReturn(secret).when(usernamePasswordCredentialsMock).getPassword();
         Mockito.doReturn(credentialsPassWord).when(secret).getPlainText();
 
-        com.synopsys.integration.rest.credentials.Credentials credentials = spiedSynopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
+        com.blackduck.integration.rest.credentials.Credentials credentials = spiedSynopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
         assertEquals(credentialsUserName, credentials.getUsername().orElse(null));
         assertEquals(credentialsPassWord, credentials.getPassword().orElse(null));
         assertFalse(credentials.isBlank());
@@ -53,7 +53,7 @@ public class SynopsysCredentialsHelperTest {
         JenkinsWrapper jenkinsWrapperMock = Mockito.mock(JenkinsWrapper.class);
         SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
 
-        com.synopsys.integration.rest.credentials.Credentials credentials = synopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
+        com.blackduck.integration.rest.credentials.Credentials credentials = synopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
         assertEquals(Optional.empty(), credentials.getUsername());
         assertEquals(Optional.empty(), credentials.getPassword());
         assertTrue(credentials.isBlank());

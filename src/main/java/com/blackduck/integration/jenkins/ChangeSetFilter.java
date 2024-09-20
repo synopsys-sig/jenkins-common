@@ -7,7 +7,7 @@
  */
 package com.blackduck.integration.jenkins;
 
-import com.synopsys.integration.log.IntLogger;
+import com.blackduck.integration.log.IntLogger;
 import hudson.scm.ChangeLogSet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;

@@ -7,8 +7,8 @@
  */
 package com.blackduck.integration.jenkins.service;
 
-import com.synopsys.integration.util.IntEnvironmentVariables;
-import com.synopsys.integration.util.OperatingSystemType;
+import com.blackduck.integration.util.IntEnvironmentVariables;
+import com.blackduck.integration.util.OperatingSystemType;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;

@@ -12,7 +12,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import com.cloudbees.plugins.credentials.matchers.IdMatcher;
-import com.synopsys.integration.rest.credentials.CredentialsBuilder;
+import com.blackduck.integration.rest.credentials.CredentialsBuilder;
 import hudson.util.Secret;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
@@ -31,10 +31,10 @@ public class SynopsysCredentialsHelper {
         this.jenkinsWrapper = jenkinsWrapper;
     }
 
-    public com.synopsys.integration.rest.credentials.Credentials getIntegrationCredentialsById(String credentialsId) {
+    public com.blackduck.integration.rest.credentials.Credentials getIntegrationCredentialsById(String credentialsId) {
         Optional<UsernamePasswordCredentialsImpl> credentials = getUsernamePasswordCredentialsById(credentialsId);
 
-        CredentialsBuilder credentialsBuilder = com.synopsys.integration.rest.credentials.Credentials.newBuilder();
+        CredentialsBuilder credentialsBuilder = com.blackduck.integration.rest.credentials.Credentials.newBuilder();
 
         credentials.map(UsernamePasswordCredentialsImpl::getUsername)
             .ifPresent(credentialsBuilder::setUsername);

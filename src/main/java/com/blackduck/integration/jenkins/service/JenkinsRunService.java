@@ -9,8 +9,8 @@ package com.blackduck.integration.jenkins.service;
 
 import com.blackduck.integration.jenkins.ChangeSetFilter;
 import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
-import com.synopsys.integration.log.LogLevel;
-import com.synopsys.integration.rest.RestConstants;
+import com.blackduck.integration.log.LogLevel;
+import com.blackduck.integration.rest.RestConstants;
 import hudson.model.Action;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;

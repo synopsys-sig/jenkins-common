@@ -2,15 +2,15 @@ package com.blackduck.integration.stepworkflow.jenkins;
 
 import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
 import com.blackduck.integration.jenkins.wrapper.JenkinsVersionHelper;
-import com.synopsys.integration.log.LogLevel;
-import com.synopsys.integration.phonehome.PhoneHomeResponse;
-import com.synopsys.integration.phonehome.UniquePhoneHomeProduct;
-import com.synopsys.integration.phonehome.request.PhoneHomeRequestBody;
-import com.synopsys.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
+import com.blackduck.integration.log.LogLevel;
+import com.blackduck.integration.phonehome.PhoneHomeResponse;
+import com.blackduck.integration.phonehome.UniquePhoneHomeProduct;
+import com.blackduck.integration.phonehome.request.PhoneHomeRequestBody;
+import com.blackduck.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
 import com.blackduck.integration.stepworkflow.StepWorkflow;
 import com.blackduck.integration.stepworkflow.StepWorkflowResponse;
 import com.blackduck.integration.stepworkflow.SubStep;
-import com.synopsys.integration.util.NameVersion;
+import com.blackduck.integration.util.NameVersion;
 import hudson.AbortException;
 import hudson.model.TaskListener;
 import org.junit.jupiter.api.Test;
@@ -117,7 +117,7 @@ public class JenkinsStepWorkflowTest {
         Optional<PhoneHomeResponse> phoneHomeResponse = spiedJenkinsStepWorkflow.beginPhoneHome();
 
         assertEquals(Optional.empty(), phoneHomeResponse);
-        assertTrue(byteArrayOutputStream.toString().startsWith("Phone home failed due to an unexpected exception:"));
+        assertTrue(byteArrayOutputStream.toString().contains("Phone home failed due to an unexpected exception:"));
     }
 
     public static class JenkinsStepWorkflowImpl extends JenkinsStepWorkflow<String> {

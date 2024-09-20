@@ -1,8 +1,8 @@
 package com.blackduck.integration.jenkins.wrapper;
 
-import com.synopsys.integration.rest.credentials.CredentialsBuilder;
-import com.synopsys.integration.rest.proxy.ProxyInfo;
-import com.synopsys.integration.rest.proxy.ProxyInfoBuilder;
+import com.blackduck.integration.rest.credentials.CredentialsBuilder;
+import com.blackduck.integration.rest.proxy.ProxyInfo;
+import com.blackduck.integration.rest.proxy.ProxyInfoBuilder;
 import hudson.ProxyConfiguration;
 import hudson.util.Secret;
 import org.apache.commons.lang.StringUtils;

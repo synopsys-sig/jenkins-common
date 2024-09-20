@@ -8,7 +8,7 @@
 package com.blackduck.integration.jenkins.service;
 
 import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
-import com.synopsys.integration.function.ThrowingSupplier;
+import com.blackduck.integration.function.ThrowingSupplier;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;

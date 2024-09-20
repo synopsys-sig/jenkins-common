@@ -1,6 +1,6 @@
 package com.blackduck.integration.jenkins.extensions;
 
-import com.synopsys.integration.log.LogLevel;
+import com.blackduck.integration.log.LogLevel;
 import hudson.model.TaskListener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

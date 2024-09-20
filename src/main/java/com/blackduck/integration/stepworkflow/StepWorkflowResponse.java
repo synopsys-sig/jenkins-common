@@ -7,8 +7,8 @@
  */
 package com.blackduck.integration.stepworkflow;
 
-import com.synopsys.integration.function.ThrowingConsumer;
-import com.synopsys.integration.function.ThrowingFunction;
+import com.blackduck.integration.function.ThrowingConsumer;
+import com.blackduck.integration.function.ThrowingFunction;
 
 public class StepWorkflowResponse<T> {
     private final boolean workflowSucceeded;

@@ -7,8 +7,8 @@
  */
 package com.blackduck.integration.jenkins.extensions;
 
-import com.synopsys.integration.log.IntLogger;
-import com.synopsys.integration.log.LogLevel;
+import com.blackduck.integration.log.IntLogger;
+import com.blackduck.integration.log.LogLevel;
 import hudson.model.TaskListener;
 
 import java.io.PrintStream;

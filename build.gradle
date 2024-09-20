@@ -13,7 +13,7 @@ buildscript {
 project.ext.moduleName = 'com.blackduck.integration.jenkins-common'
 project.ext.javaUseAutoModuleName = 'true'
 
-version = '0.5.6-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 description = 'Library for common Blackduck Jenkins plugin logic'
 
 apply plugin: 'com.blackduck.integration.library'
@@ -26,8 +26,8 @@ repositories {
 dependencies {
     // These MUST stay in lock step with any $PRODUCT-common you use with this
     // --rotte MAR 2020
-    api 'com.blackduck.integration:integration-rest:10.3.6'
-    api 'com.blackduck.integration:phone-home-client:5.1.7'
+    api 'com.blackduck.integration:integration-rest:11.0.0'
+    api 'com.blackduck.integration:phone-home-client:7.0.0'
 
     // added by gradle jpi plugin to our plugins
     implementation 'com.google.code.findbugs:annotations:3.0.0'

@@ -9,7 +9,7 @@ package com.blackduck.integration.stepworkflow.jenkins;
 
 import com.blackduck.integration.stepworkflow.SubStep;
 import com.blackduck.integration.stepworkflow.SubStepResponse;
-import com.synopsys.integration.exception.IntegrationException;
+import com.blackduck.integration.exception.IntegrationException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 

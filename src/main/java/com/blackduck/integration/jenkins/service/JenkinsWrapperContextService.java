@@ -7,7 +7,7 @@
  */
 package com.blackduck.integration.jenkins.service;
 
-import com.synopsys.integration.util.IntEnvironmentVariables;
+import com.blackduck.integration.util.IntEnvironmentVariables;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class JenkinsWrapperContextService {
