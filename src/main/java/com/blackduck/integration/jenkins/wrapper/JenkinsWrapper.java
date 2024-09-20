@@ -56,8 +56,8 @@ public class JenkinsWrapper {
         return JenkinsProxyHelper.fromProxyConfiguration(getProxyConfiguration().orElse(null));
     }
 
-    public SynopsysCredentialsHelper getCredentialsHelper() {
-        return new SynopsysCredentialsHelper(this);
+    public BlackduckCredentialsHelper getCredentialsHelper() {
+        return new BlackduckCredentialsHelper(this);
     }
 
 }

@@ -56,7 +56,7 @@ public class JenkinsServicesFactory {
 
     private FilePath validateWorkspace(FilePath workspace) throws AbortException {
         if (workspace == null) {
-            throw new AbortException("Cannot execute this Synopsys integration: The workspace could not be determined.");
+            throw new AbortException("Cannot execute this Blackduck integration: The workspace could not be determined.");
         }
 
         return workspace;

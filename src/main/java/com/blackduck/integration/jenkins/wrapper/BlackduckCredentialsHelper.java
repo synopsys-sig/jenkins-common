@@ -19,7 +19,7 @@ import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 
 import java.util.Optional;
 
-public class SynopsysCredentialsHelper {
+public class BlackduckCredentialsHelper {
     public static final Class<StringCredentialsImpl> API_TOKEN_CREDENTIALS_CLASS = StringCredentialsImpl.class;
     public static final CredentialsMatcher API_TOKEN_CREDENTIALS = CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS);
     public static final Class<UsernamePasswordCredentialsImpl> USERNAME_PASSWORD_CREDENTIALS_CLASS = UsernamePasswordCredentialsImpl.class;
@@ -27,7 +27,7 @@ public class SynopsysCredentialsHelper {
                                                                                             .either(CredentialsMatchers.instanceOf(API_TOKEN_CREDENTIALS_CLASS), CredentialsMatchers.instanceOf(USERNAME_PASSWORD_CREDENTIALS_CLASS));
     private final JenkinsWrapper jenkinsWrapper;
 
-    public SynopsysCredentialsHelper(JenkinsWrapper jenkinsWrapper) {
+    public BlackduckCredentialsHelper(JenkinsWrapper jenkinsWrapper) {
         this.jenkinsWrapper = jenkinsWrapper;
     }
 

@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SynopsysCredentialsHelperTest {
+public class BlackduckCredentialsHelperTest {
 
     private final static String maskedPassword = "************************";
     private final static String credentialsId = "synopsys/blackduck";
@@ -30,17 +30,17 @@ public class SynopsysCredentialsHelperTest {
         String credentialsUserName = StringUtils.upperCase(credentialsId);
         String credentialsPassWord = StringUtils.reverse(credentialsId);
         JenkinsWrapper jenkinsWrapperMock = Mockito.mock(JenkinsWrapper.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
-        SynopsysCredentialsHelper spiedSynopsysCredentialsHelper = Mockito.spy(synopsysCredentialsHelper);
+        BlackduckCredentialsHelper blackduckCredentialsHelper = new BlackduckCredentialsHelper(jenkinsWrapperMock);
+        BlackduckCredentialsHelper spiedBlackduckCredentialsHelper = Mockito.spy(blackduckCredentialsHelper);
         UsernamePasswordCredentialsImpl usernamePasswordCredentialsMock = Mockito.mock(UsernamePasswordCredentialsImpl.class);
         Secret secret = Mockito.mock(Secret.class);
 
-        Mockito.doReturn(Optional.of(usernamePasswordCredentialsMock)).when(spiedSynopsysCredentialsHelper).getCredentialsById(SynopsysCredentialsHelper.USERNAME_PASSWORD_CREDENTIALS_CLASS, credentialsId);
+        Mockito.doReturn(Optional.of(usernamePasswordCredentialsMock)).when(spiedBlackduckCredentialsHelper).getCredentialsById(BlackduckCredentialsHelper.USERNAME_PASSWORD_CREDENTIALS_CLASS, credentialsId);
         Mockito.doReturn(credentialsUserName).when(usernamePasswordCredentialsMock).getUsername();
         Mockito.doReturn(secret).when(usernamePasswordCredentialsMock).getPassword();
         Mockito.doReturn(credentialsPassWord).when(secret).getPlainText();
 
-        com.blackduck.integration.rest.credentials.Credentials credentials = spiedSynopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
+        com.blackduck.integration.rest.credentials.Credentials credentials = spiedBlackduckCredentialsHelper.getIntegrationCredentialsById(credentialsId);
         assertEquals(credentialsUserName, credentials.getUsername().orElse(null));
         assertEquals(credentialsPassWord, credentials.getPassword().orElse(null));
         assertFalse(credentials.isBlank());
@@ -51,9 +51,9 @@ public class SynopsysCredentialsHelperTest {
     @MethodSource("invalidCredentialIds")
     public void testGetIntegrationCredentialsByIdInvalidUser(String credentialsId) {
         JenkinsWrapper jenkinsWrapperMock = Mockito.mock(JenkinsWrapper.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
+        BlackduckCredentialsHelper blackduckCredentialsHelper = new BlackduckCredentialsHelper(jenkinsWrapperMock);
 
-        com.blackduck.integration.rest.credentials.Credentials credentials = synopsysCredentialsHelper.getIntegrationCredentialsById(credentialsId);
+        com.blackduck.integration.rest.credentials.Credentials credentials = blackduckCredentialsHelper.getIntegrationCredentialsById(credentialsId);
         assertEquals(Optional.empty(), credentials.getUsername());
         assertEquals(Optional.empty(), credentials.getPassword());
         assertTrue(credentials.isBlank());
@@ -64,25 +64,25 @@ public class SynopsysCredentialsHelperTest {
     public void testGetApiTokenByCredentialsIdValidUser() {
         String apiTokenText = StringUtils.upperCase(credentialsId);
         JenkinsWrapper jenkinsWrapperMock = Mockito.mock(JenkinsWrapper.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
-        SynopsysCredentialsHelper spiedSynopsysCredentialsHelper = Mockito.spy(synopsysCredentialsHelper);
+        BlackduckCredentialsHelper blackduckCredentialsHelper = new BlackduckCredentialsHelper(jenkinsWrapperMock);
+        BlackduckCredentialsHelper spiedBlackduckCredentialsHelper = Mockito.spy(blackduckCredentialsHelper);
         StringCredentialsImpl stringCredentialsImplMock = Mockito.mock(StringCredentialsImpl.class);
         Secret secretMock = Mockito.mock(Secret.class);
 
-        Mockito.doReturn(Optional.of(stringCredentialsImplMock)).when(spiedSynopsysCredentialsHelper).getCredentialsById(SynopsysCredentialsHelper.API_TOKEN_CREDENTIALS_CLASS, credentialsId);
+        Mockito.doReturn(Optional.of(stringCredentialsImplMock)).when(spiedBlackduckCredentialsHelper).getCredentialsById(BlackduckCredentialsHelper.API_TOKEN_CREDENTIALS_CLASS, credentialsId);
         Mockito.doReturn(secretMock).when(stringCredentialsImplMock).getSecret();
         Mockito.doReturn(apiTokenText).when(secretMock).getPlainText();
 
-        assertEquals(apiTokenText, spiedSynopsysCredentialsHelper.getApiTokenByCredentialsId(credentialsId).orElse(null));
+        assertEquals(apiTokenText, spiedBlackduckCredentialsHelper.getApiTokenByCredentialsId(credentialsId).orElse(null));
     }
 
     @ParameterizedTest
     @MethodSource("invalidCredentialIds")
     public void testGetApiTokenByCredentialsIdInvalidUser(String credentialsId) {
         JenkinsWrapper jenkinsWrapperMock = Mockito.mock(JenkinsWrapper.class);
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
+        BlackduckCredentialsHelper blackduckCredentialsHelper = new BlackduckCredentialsHelper(jenkinsWrapperMock);
 
-        assertEquals(Optional.empty(), synopsysCredentialsHelper.getApiTokenByCredentialsId(credentialsId));
+        assertEquals(Optional.empty(), blackduckCredentialsHelper.getApiTokenByCredentialsId(credentialsId));
     }
 
     @Test
@@ -94,8 +94,8 @@ public class SynopsysCredentialsHelperTest {
         Mockito.when(jenkinsWrapperMock.getCredentialsById(ArgumentMatchers.any(IdMatcher.class), ArgumentMatchers.eq(stringCredentialsClass)))
             .thenReturn(Optional.ofNullable(expectedStringCredentialsMock));
 
-        SynopsysCredentialsHelper synopsysCredentialsHelper = new SynopsysCredentialsHelper(jenkinsWrapperMock);
+        BlackduckCredentialsHelper blackduckCredentialsHelper = new BlackduckCredentialsHelper(jenkinsWrapperMock);
 
-        assertEquals(expectedStringCredentialsMock, synopsysCredentialsHelper.getCredentialsById(stringCredentialsClass, credentialsId).orElse(null));
+        assertEquals(expectedStringCredentialsMock, blackduckCredentialsHelper.getCredentialsById(stringCredentialsClass, credentialsId).orElse(null));
     }
 }

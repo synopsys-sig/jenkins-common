@@ -1,5 +1,5 @@
 # Overview
-Library for common Synopsys Jenkins plugin logic
+Library for common Blackduck Jenkins plugin logic
 
 ## Build ##
 
