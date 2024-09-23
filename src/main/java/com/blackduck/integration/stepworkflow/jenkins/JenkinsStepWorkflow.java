@@ -15,6 +15,7 @@ import com.blackduck.integration.rest.client.IntHttpClient;
 import com.blackduck.integration.rest.response.Response;
 import com.blackduck.integration.stepworkflow.StepWorkflow;
 import com.blackduck.integration.stepworkflow.StepWorkflowResponse;
+import com.blackduck.integration.util.ResourceUtil;
 import com.google.gson.Gson;
 import com.blackduck.integration.jenkins.extensions.JenkinsIntLogger;
 import com.blackduck.integration.phonehome.PhoneHomeClient;
@@ -26,11 +27,14 @@ import com.blackduck.integration.phonehome.request.PhoneHomeRequestBodyBuilder;
 import com.blackduck.integration.rest.proxy.ProxyInfo;
 import com.google.gson.JsonSyntaxException;
 import hudson.AbortException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,6 +46,7 @@ public abstract class JenkinsStepWorkflow<T> {
     private final Gson gson;
     private final IntHttpClient intHttpClient;
     private final static String CREDENTIALS_PATH = "https://static-content.app.blackduck.com/detect/analytics/creds.json";
+    private final static String TEST_CREDENTIALS_PATH = "https://static-content.saas-staging.blackduck.com/detect/analytics/creds.json";
 
     public JenkinsStepWorkflow(JenkinsIntLogger logger, JenkinsVersionHelper jenkinsVersionHelper) {
         this.logger = logger;
@@ -104,6 +109,10 @@ public abstract class JenkinsStepWorkflow<T> {
 
     protected PhoneHomeCredentials getGa4Credentials() throws IOException, InterruptedException, JsonSyntaxException, IntegrationException {
         String fileUrl = CREDENTIALS_PATH;
+        if (isTestEnvironment()) {
+            fileUrl = TEST_CREDENTIALS_PATH;
+            logger.debug("Phone home is operational for a test environment.");
+        }
         logger.debug("Downloading phone home credentials.");
         RequestBuilder createRequestBuilder = intHttpClient.createRequestBuilder(HttpMethod.GET);
         HttpUriRequest request = createRequestBuilder
@@ -111,6 +120,22 @@ public abstract class JenkinsStepWorkflow<T> {
                 .build();
         Response response = intHttpClient.execute(request);
         return gson.fromJson(response.getContentString(), PhoneHomeCredentials.class);
+    }
+
+    private boolean isTestEnvironment() {
+        String projectVersion = "";
+        try {
+            String versionFileContents = ResourceUtil.getResourceAsString(this.getClass(), "/version.txt", StandardCharsets.UTF_8.toString());
+            projectVersion = String.valueOf(Arrays.asList(versionFileContents.split("\n")).stream()
+                    .filter(s -> s.startsWith("version=")).
+                    map(s -> StringUtils.removeStart(s, "version="))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Error parsing version string from version file")));;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return (StringUtils.contains(projectVersion, "SIGQA")
+                || StringUtils.contains(projectVersion, "SNAPSHOT"));
     }
 
 }

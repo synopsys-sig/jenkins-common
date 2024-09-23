@@ -18,6 +18,12 @@ description = 'Library for common Blackduck Jenkins plugin logic'
 
 apply plugin: 'com.blackduck.integration.library'
 
+final def resources = new File("${projectDir}/src/main/resources")
+final def versionFile = new File(resources, "version.txt")
+resources.mkdirs()
+versionFile.delete()
+versionFile << "version=" << version << "\n" << "builddate=" << new Date().format('yyyy-MM-dd')
+
 repositories {
     // Included to resolve Jenkins and Jenkins plugin dependencies
     maven { url 'https://repo.jenkins-ci.org/releases/' }
