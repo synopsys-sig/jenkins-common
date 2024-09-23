@@ -12,3 +12,5 @@ bin/
 .gradle/
 build/
 out/
+
+src/main/resources/
