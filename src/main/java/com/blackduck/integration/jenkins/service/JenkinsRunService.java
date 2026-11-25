@@ -14,7 +14,7 @@ import com.blackduck.integration.rest.RestConstants;
 import hudson.model.Action;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper;
 
 import java.util.Date;
