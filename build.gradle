@@ -32,8 +32,8 @@ repositories {
 dependencies {
     // These MUST stay in lock step with any $PRODUCT-common you use with this
     // --rotte MAR 2020
-    api 'com.blackduck.integration:integration-rest:11.0.0'
-    api 'com.blackduck.integration:phone-home-client:7.0.0'
+    api 'com.blackduck.integration:integration-rest:11.1.4'
+    api 'com.blackduck.integration:phone-home-client:7.0.3'
 
     // added by gradle jpi plugin to our plugins
     implementation 'com.google.code.findbugs:annotations:3.0.0'
