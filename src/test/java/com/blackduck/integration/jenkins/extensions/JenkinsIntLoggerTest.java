@@ -24,8 +24,10 @@ public class JenkinsIntLoggerTest {
     private final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
+    // JenkinsIntLogger uses println, which writes the platform line separator (CRLF on Windows, LF on Linux)
+    private static final String LINE_SEPARATOR = System.lineSeparator();
     private static final String textMessage = "This is a test message";
-    private static final String expectedText = textMessage + "\n";
+    private static final String expectedText = textMessage + LINE_SEPARATOR;
 
     @BeforeEach
     public void setUpStreams() {
@@ -45,12 +47,12 @@ public class JenkinsIntLoggerTest {
             Arguments.of(null, null, LogLevel.INFO, ""),
             Arguments.of(null, null, LogLevel.DEBUG, ""),
             Arguments.of(null, null, LogLevel.TRACE, ""),
-            Arguments.of("", null, LogLevel.OFF, "\n"),
-            Arguments.of("", null, LogLevel.ERROR, "\n"),
-            Arguments.of("", null, LogLevel.WARN, "\n"),
-            Arguments.of("", null, LogLevel.INFO, "\n"),
-            Arguments.of("", null, LogLevel.DEBUG, "\n"),
-            Arguments.of("", null, LogLevel.TRACE, "\n"),
+            Arguments.of("", null, LogLevel.OFF, LINE_SEPARATOR),
+            Arguments.of("", null, LogLevel.ERROR, LINE_SEPARATOR),
+            Arguments.of("", null, LogLevel.WARN, LINE_SEPARATOR),
+            Arguments.of("", null, LogLevel.INFO, LINE_SEPARATOR),
+            Arguments.of("", null, LogLevel.DEBUG, LINE_SEPARATOR),
+            Arguments.of("", null, LogLevel.TRACE, LINE_SEPARATOR),
             Arguments.of(textMessage, null, LogLevel.OFF, expectedText),
             Arguments.of(textMessage, null, LogLevel.ERROR, expectedText),
             Arguments.of(textMessage, null, LogLevel.WARN, expectedText),
@@ -66,7 +68,7 @@ public class JenkinsIntLoggerTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         runtimeException.printStackTrace(printWriter);
-        String expectedException = stringWriter.toString() + "\n";
+        String expectedException = stringWriter.toString() + LINE_SEPARATOR;
 
         return Stream.of(
             Arguments.of(null, runtimeException, LogLevel.OFF, expectedText),
